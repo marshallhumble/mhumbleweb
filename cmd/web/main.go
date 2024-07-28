@@ -32,7 +32,8 @@ func main() {
 
 	flag.Parse()
 
-	db, err := sql.Open("sqlite3", "./identifier.sqlite?cache=shared&mode=rwc&_journal_mode=WAL")
+	db, err := sql.Open("sqlite3", "./articles.sqlite?cache=shared&mode=rwc"+
+		"&_journal_mode=WAL&parse_time=true&_time_format=sqlite")
 	if err != nil {
 		logger.Error(err.Error())
 	}
