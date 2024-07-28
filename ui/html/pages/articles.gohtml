@@ -1,8 +1,18 @@
 {{define "title"}}Articles{{end}}
 
 {{define "main"}}
-
-    <h1>Welcome</h1>
-
+    <h1>Latest Posts:</h1>
+        <br>
+    {{if .Posts}}
+        <table class="posts">
+            {{range .Posts}}
+                <tr>
+                    <td class="users"><a href='/articles/{{.ID}}'>{{.Title}}</a><div>{{.Created}}</div></td>
+                </tr>
+            {{end}}
+        </table>
+    {{else}}
+        <p>No Posts found</p>
+    {{end}}
 
 {{end}}
