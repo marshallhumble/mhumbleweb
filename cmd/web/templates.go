@@ -17,6 +17,7 @@ type templateData struct {
 	CurrentDay     int
 	CurrentHour    int
 	CurrentMinutes int
+	CurrentDoW     time.Weekday
 	Posts          []models.Post
 	Post           models.Post
 }
@@ -39,8 +40,8 @@ func newTemplateCache() (map[string]*template.Template, error) {
 	cache := map[string]*template.Template{}
 
 	// Use fs.Glob() to get a slice of all filepaths in the ui.Files embedded
-	// filesystem which match the pattern 'css/pages/*.gohtml'
-	pages, err := fs.Glob(ui.Files, "css/pages/*.gohtml")
+	// filesystem which match the pattern 'html/pages/*.gohtml'
+	pages, err := fs.Glob(ui.Files, "html/pages/*.gohtml")
 	if err != nil {
 		return nil, err
 	}
@@ -51,8 +52,8 @@ func newTemplateCache() (map[string]*template.Template, error) {
 		// Create a slice containing the filepath patterns for the templates we
 		// want to parse.
 		patterns := []string{
-			"css/base.gohtml",
-			"css/partials/*.gohtml",
+			"html/base.gohtml",
+			"html/partials/*.gohtml",
 			page,
 		}
 

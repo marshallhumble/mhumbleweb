@@ -3,13 +3,19 @@ package main
 import "net/http"
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Welcome to the Home!"))
+	data := app.newTemplateData(r)
+	app.render(w, r, http.StatusOK, "home.gohtml", data)
+	return
 }
 
 func (app *application) about(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Welcome to the About Page!"))
+	data := app.newTemplateData(r)
+	app.render(w, r, http.StatusOK, "about.gohtml", data)
+	return
 }
 
-func (app *application) contact(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Welcome to the Contact Page!"))
+func (app *application) articles(w http.ResponseWriter, r *http.Request) {
+	data := app.newTemplateData(r)
+	app.render(w, r, http.StatusOK, "articles.gohtml", data)
+	return
 }
