@@ -5,11 +5,9 @@ import (
 	"database/sql"
 	"flag"
 	"html/template"
-	"io"
 	"log/slog"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"mhumbleweb/internal/models"
@@ -30,22 +28,13 @@ func main() {
 		AddSource: true,
 	}))
 
-	//Get the DB Details from the .env file, !TODO: change to OS Vars in prod
-	dbPass, dbUser, dbName, err := readFileEnvs(".env")
-	if err != nil {
-		logger.Error(err.Error())
-		os.Exit(1)
-	}
-
 	addr := flag.String("addr", ":4000", "HTTP network address")
-	dsn := flag.String("dsn", dbUser+":"+dbPass+"@/"+dbName+"?parseTime=true", "MySQL data source name")
 
 	flag.Parse()
 
-	db, err := openDB(*dsn)
+	db, err := sql.Open("sqlite3", "./identifier.sqlite?cache=shared&mode=rwc&_journal_mode=WAL")
 	if err != nil {
 		logger.Error(err.Error())
-		os.Exit(1)
 	}
 
 	defer db.Close()
@@ -91,62 +80,4 @@ func main() {
 	err = srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
 	logger.Error(err.Error())
 	os.Exit(1)
-}
-
-// openDB open the db and check if the tables exist, if not run first setup.
-func openDB(dsn string) (*sql.DB, error) {
-	db, err := sql.Open("mysql", dsn)
-	if err != nil {
-		return nil, err
-	}
-
-	if err = db.Ping(); err != nil {
-		db.Close()
-		return nil, err
-	}
-
-	return db, nil
-}
-
-// readFileEnvs pull the database details from the .ENV file that we are using for Docker init
-func readFileEnvs(fileName string) (dbPass, dbUser, dbName string, err error) {
-
-	file, err := os.Open(fileName)
-	if err != nil {
-		return "", "", "", err
-	}
-
-	data, err := io.ReadAll(file)
-	if err != nil {
-		return "", "", "", err
-	}
-
-	text := string(data)
-
-	dbName = getVariable(text, "DB_DATABASE")
-	dbPass = getVariable(text, "DB_PASSWORD")
-	dbUser = getVariable(text, "DB_USERNAME")
-
-	return dbPass, dbUser, dbName, nil
-}
-
-// getVariable get the variables from the ENV file, right now we are assuming they look like this:
-// DB_USERNAME=username
-// DB_PASSWORD=password
-// DB_DATABASE=db_name
-func getVariable(text, key string) string {
-
-	lines := strings.Split(text, "\n")
-
-	for _, line := range lines {
-		if strings.Contains(line, key) {
-			// Split the line into key-value pairs
-			parts := strings.Split(line, "=")
-
-			// Get the value of the variable
-			return parts[1]
-		}
-
-	}
-	return ""
 }
