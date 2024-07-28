@@ -1,6 +1,7 @@
 package main
 
 import (
+	"mhumbleweb/ui"
 	"net/http"
 	"path/filepath"
 
@@ -19,6 +20,11 @@ func (app *application) routes() http.Handler {
 	fileServer := http.FileServer(neuteredFileSystem{http.Dir("./ui/static")})
 	mux.Handle("/static", http.NotFoundHandler())
 	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
+	mux.Handle("GET /static/", http.FileServerFS(ui.Files))
+
+	mux.HandleFunc("/{$}", app.home)
+	mux.HandleFunc("GET /about/", app.about)
+	mux.HandleFunc("GET /articles/", app.articles)
 
 	standard := alice.New(app.recoverPanic, app.logRequest, commonHeaders)
 	return standard.Then(mux)
