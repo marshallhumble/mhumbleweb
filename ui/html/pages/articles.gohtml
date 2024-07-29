@@ -1,13 +1,12 @@
 {{define "title"}}Articles{{end}}
 
 {{define "main"}}
-    <h1>Latest Posts:</h1>
-        <br>
+      <h1 class="articleheader">Recent Articles</h1>
     {{if .Posts}}
         <table class="posts">
             {{range .Posts}}
                 <tr>
-                    <td class="users"><a href='/articles/{{.ID}}'>{{.Title}}</a><div>{{.Created}}</div></td>
+                    <td class="articlefeed"><a href='/articles/{{.ID}}'>{{.Title}}</a></td>
                 </tr>
             {{end}}
         </table>
