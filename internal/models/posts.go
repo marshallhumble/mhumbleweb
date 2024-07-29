@@ -2,7 +2,6 @@ package models
 
 import (
 	"database/sql"
-	"fmt"
 	"html/template"
 )
 
@@ -46,7 +45,6 @@ func (pm PostsModel) GetById(id int) (Post, error) {
 	var post Post
 	if err := pm.DB.QueryRow("SELECT * FROM posts WHERE id = $1", id).Scan(&post.ID, &post.Title, &post.Content,
 		&post.Created, &post.Updated); err != nil {
-		fmt.Println(err)
 		return post, err
 	}
 

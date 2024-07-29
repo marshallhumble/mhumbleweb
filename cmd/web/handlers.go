@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 )
@@ -48,8 +47,6 @@ func (app *application) getArticle(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/articles/", http.StatusSeeOther)
 		return
 	}
-
-	fmt.Println("handler")
 
 	data.Post = post
 	app.render(w, r, http.StatusOK, "article.gohtml", data)
