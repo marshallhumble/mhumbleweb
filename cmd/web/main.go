@@ -78,6 +78,7 @@ func main() {
 
 	logger.Info("starting server", "addr", srv.Addr)
 
+	//Serve https
 	err = srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
 	logger.Error(err.Error())
 	os.Exit(1)

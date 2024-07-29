@@ -28,21 +28,11 @@
     --breakpoint-small-desktop: 1260px;
 }
 
-html, body {
-    height: 100%;
-}
-
-body {
-    line-height: 1.5;
-    background-color: #ffffff;
-    color: #2e2e2e;
-    overflow-y: scroll;
-}
-
 header, nav, main, footer {
     padding: 2px calc((100% - 800px) / 2) 0;
 }
 
+/* === NAV === */
 .topnav {
     flex: 1;
     overflow: hidden;
@@ -57,12 +47,7 @@ header, nav, main, footer {
     color: #6A6C6F;
 }
 
-main {
-    margin-top: 54px;
-    margin-bottom: 54px;
-    min-height: calc(100vh - 345px);
-    overflow: auto;
-}
+
 
 /* Change the color of links on hover */
 .topnav a:hover {
@@ -140,6 +125,44 @@ nav a.live:after {
     -webkit-transform: rotate(-45deg);
 }
 
+/* === BODY === */
+
+main {
+    margin-top: 54px;
+    margin-bottom: 54px;
+    min-height: calc(100vh - 345px);
+    overflow: auto;
+}
+
+html, body {
+    height: 100%;
+}
+
+body {
+    line-height: 1.5;
+    background-color: #ffffff;
+    color: #2e2e2e;
+    overflow-y: scroll;
+}
+
+.h1para {
+    font-size: var(--size-lg);
+}
+
+.hpara {
+    text-align: left;
+    tab-size: var(--size-md);
+    font-size: var(--size-md);
+}
+
+.articlefeed {
+    font-size: var(--size-xl);
+}
+
+.articleheader {
+    font-size: var(--size-lg);
+}
+
 /* === FOOTER === */
 
 footer {
@@ -162,4 +185,3 @@ footer {
     top: 150vh;
 }
 /* end sticky footer */
-
