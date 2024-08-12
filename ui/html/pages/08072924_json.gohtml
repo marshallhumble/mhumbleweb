@@ -1,0 +1,214 @@
+{{define "main"}}
+
+	<h1>Using Json in Go</h1>
+	<br>
+	<p>
+	I'm always consistently impressed in how Go works. From <i>actually</i> secure by default to minor tasks.
+			Go always seems to be made in a logical way that lets you just get the work done.
+			</p>
+		<br>
+			<p>
+			Similarly, Json in Go is fairly simple and uses the encoding/json module which is Go’s implementation
+			of the <a href="https://datatracker.ietf.org/doc/html/rfc8259">rfc8259</a> (Go's site uses the old number,
+			7159, now obsolete) Json Standard. Json is used in many places on the web, commonly in APIs or to send data
+			to a front end server running JavaScript.
+			</p>
+		<br>
+		<p>
+			Go calls the encoding of Json marshal()-ing (serializing) and unmarshal()-ing (deserializing) a terminology
+			of which I am a fan of.
+			As expected for Go it is straightforward. You simply make a struct which defines that <i>data structure</i>
+			of the Json. As a note, field names must match exactly.
+		</p>
+		<br>
+	<pre>
+    <code class="language-go line-numbers" data-prismjs-copy="Copy Me!">
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"log"
+)
+
+func main() {
+	type Teams struct {
+		Name string
+		City string
+	}
+
+	teams := []Teams{
+		{"Spurs", "San Antonio"},
+		{"Mavericks", "Dallas"},
+		{"Rockets", "Houston"},
+	}
+
+	b, err := json.Marshal(teams)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(string(b))
+}
+    </code>
+	</pre>
+
+	Which will return:
+	<pre>
+		<code class="language-json" data-prismjs-copy="Copy Me!">
+[{"Name":"Spurs","City":"San Antonio"},{"Name":"Mavericks","City":"Dallas"},{"Name":"Rockets","City":"Houston"}]
+		</code>
+	</pre>
+	<br>
+		<p>
+			You can also replace <i>fmt.Println(string(b))</i> with the following to get nice pretty printed Json:
+		</p>
+	<br>
+<pre>
+	<code class="language-go">
+var out bytes.Buffer
+json.Indent(&out, b, "=", "\t")
+out.WriteTo(os.Stdout)
+	</code>
+</pre>
+
+	<br>
+	<p>
+	This returns:
+	</p>
+	<br>
+<pre>
+	<code class="language-json">
+[
+	{
+		"Name": "Spurs",
+		"City": "San Antonio"
+	},
+	{
+		"Name": "Stars",
+		"City": "Mavericks"
+	},
+	{
+		"Name": "Rockets",
+		"City": "Houston"
+	}
+]
+	</code>
+</pre>
+<br>
+	<p>
+		For a little more complex example like let's add the wins and losses in for each team for the 2023-2024 season.
+		We are going to nest the scores in the existing Json like so:
+		<pre>
+		<code class="language-json">
+[
+	{
+		Name": "Spurs",
+		"City": "San Antonio",
+		"Scores": {
+			"Wins": 22,
+			"Loss": 60,
+		},
+	}
+]
+
+		</code>
+	</pre>
+	<p>
+		We would first need to create another struct to tell Go how to handle the data:
+	</p>
+<pre>
+	<code class="language-go">
+type (
+	Teams struct {
+		Name 	string
+		City 	string
+		Scores 	Scores
+	}
+	Scores	struct {
+		Wins 	int
+		Loss  	int
+	}
+)
+	</code>
+</pre>
+<br>
+		<p>
+			Which we can then use for our Json:
+		</p>
+		<br>
+<pre>
+	<code class="language-go">
+type (
+	Teams struct {
+		Name   string
+		City   string
+		Scores []Scores
+	}
+	Scores struct {
+		Wins int
+		Loss int
+	}
+)
+
+func main() {
+	t := `{
+		Name": "Spurs",
+		"City": "San Antonio",
+		"Scores": {
+			"Wins": 22,
+			"Loss": 60,
+		},
+	}`
+
+b, err := json.Marshal(t)
+	if err != nil {
+		log.Fatalf("Unable to marshal due to %s\n", err)
+	}
+
+fmt.Println(string(b))
+}
+	</code>
+</pre>
+		<br>
+		<p>
+			Which we can then see is marshalled correctly:
+		</p>
+<pre>
+	<code class="language-json">
+"{\n\t\t\"Name\": \"Spurs\",\n\t\t\"City\": \"San Antonio\",\n\t\t\"Scores\": {\n\t\t\t\"Wins\": 22,\n\t\t\t\"Loss\": 60,\n\t\t},\n\t}"
+	</code>
+</pre>
+		<br>
+		<p>
+			Go also allows for a nice html escaped version of printing that will then be safe to embed in script tags.
+			I'll just snag the example here from the Go Docs since it is pretty simple:
+		</p>
+<pre>
+	<code class="language-go">
+package main
+
+import (
+	"bytes"
+	"encoding/json"
+	"os"
+)
+
+func main() {
+	var out bytes.Buffer
+	json.HTMLEscape(&out, []byte(`{"Name":"<b>HTML content</b>"}`))
+	out.WriteTo(os.Stdout)
+}
+	</code>
+</pre>
+<br>
+<p>
+	Which returns:
+</p>
+<pre>
+	<code class="language-json">
+{"Name":"\u003cb\u003eHTML content\u003c/b\u003e"}
+	</code>
+</pre>
+
+{{end}}
