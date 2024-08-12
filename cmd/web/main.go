@@ -2,7 +2,6 @@ package main
 
 import (
 	"crypto/tls"
-	"database/sql"
 	"flag"
 	"html/template"
 	"log/slog"
@@ -24,21 +23,13 @@ type application struct {
 func main() {
 
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		Level:     slog.LevelDebug,
+		Level:     slog.LevelInfo,
 		AddSource: true,
 	}))
 
-	addr := flag.String("addr", ":4000", "HTTP network address")
+	addr := flag.String("addr", ":443", "HTTP network address")
 
 	flag.Parse()
-
-	db, err := sql.Open("sqlite3", "./articles.sqlite?cache=shared&mode=rwc"+
-		"&_journal_mode=WAL&parse_time=true&_time_format=sqlite")
-	if err != nil {
-		logger.Error(err.Error())
-	}
-
-	defer db.Close()
 
 	templateCache, err := newTemplateCache()
 	if err != nil {
@@ -48,7 +39,7 @@ func main() {
 
 	app := &application{
 		logger:        logger,
-		posts:         models.PostsModel{DB: db},
+		posts:         models.PostsModel{},
 		templateCache: templateCache,
 	}
 
@@ -79,7 +70,7 @@ func main() {
 	logger.Info("starting server", "addr", srv.Addr)
 
 	//Serve https
-	err = srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
+	err = srv.ListenAndServeTLS("./tls/cert.pem.local", "./tls/key.pem.local")
 	logger.Error(err.Error())
 	os.Exit(1)
 }

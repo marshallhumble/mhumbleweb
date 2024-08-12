@@ -49,6 +49,6 @@ func (app *application) getArticle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data.Post = post
-	app.render(w, r, http.StatusOK, "article.gohtml", data)
+	app.render(w, r, http.StatusOK, string(post.Content), data)
 
 }
