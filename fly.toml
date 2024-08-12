@@ -8,13 +8,13 @@ primary_region = 'dfw'
 
 [build]
   [build.args]
-    GO_VERSION = '1.22.5'
+    GO_VERSION = '1.22.6'
 
 [env]
   PORT = '443'
 
 [http_service]
-  internal_port = 8080
+  internal_port = 443
   force_https = true
   auto_stop_machines = 'stop'
   auto_start_machines = true

@@ -1,22 +1,22 @@
-ARG GO_VERSION=1.22.5
+ARG GO_VERSION=1.22.6
 
 # First stage: build the executable.
 FROM golang:${GO_VERSION}-alpine AS build
-
+ENV CGO_ENABLED=0
 WORKDIR /src
 COPY . .
-ENV CGO_ENABLED=1
 RUN go mod download
-RUN go build -o web ./cmd/web
+RUN go build -ldflags "-s -w" -o web ./cmd/web
 
 FROM alpine:edge
 
 WORKDIR /app
 
 COPY --from=build /src/web .
-COPY ./tls/ .
-COPY ./articles.sqlite .
+COPY ./tls/cert.pem /app/tls/cert.pem
+COPY ./tls/key.pem /app/tls/key.pem
 
-EXPOSE 8080
+
+EXPOSE 443
 ENTRYPOINT ["/app/web"]
 
