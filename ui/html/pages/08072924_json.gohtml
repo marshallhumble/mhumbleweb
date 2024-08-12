@@ -114,7 +114,7 @@ out.WriteTo(os.Stdout)
 
 		</code>
 	</pre>
-
+	<p>
 		We would first need to create another struct to tell Go how to handle the data:
 	</p>
 <pre>
@@ -179,4 +179,36 @@ fmt.Println(string(b))
 "{\n\t\t\"Name\": \"Spurs\",\n\t\t\"City\": \"San Antonio\",\n\t\t\"Scores\": {\n\t\t\t\"Wins\": 22,\n\t\t\t\"Loss\": 60,\n\t\t},\n\t}"
 	</code>
 </pre>
+		<br>
+		<p>
+			Go also allows for a nice html escaped version of printing that will then be safe to embed in script tags.
+			I'll just snag the example here from the Go Docs since it is pretty simple:
+		</p>
+<pre>
+	<code class="language-go">
+package main
+
+import (
+	"bytes"
+	"encoding/json"
+	"os"
+)
+
+func main() {
+	var out bytes.Buffer
+	json.HTMLEscape(&out, []byte(`{"Name":"<b>HTML content</b>"}`))
+	out.WriteTo(os.Stdout)
+}
+	</code>
+</pre>
+<br>
+<p>
+	Which returns:
+</p>
+<pre>
+	<code class="language-json">
+{"Name":"\u003cb\u003eHTML content\u003c/b\u003e"}
+	</code>
+</pre>
+
 {{end}}
