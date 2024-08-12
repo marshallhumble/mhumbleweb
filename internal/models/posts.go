@@ -1,52 +1,61 @@
 package models
 
 import (
-	"database/sql"
+	"encoding/json"
+	"fmt"
 	"html/template"
+	"log"
+	"os"
+	"time"
 )
 
 type PostsInterface interface {
 	GetAll() ([]Post, error)
-	GetById(id int) (Post, error)
+	GetById(id int) (string, error)
 }
 
 type Post struct {
-	ID      int
+	Id      int
 	Title   string
 	Content template.HTML
-	Created string
-	Updated string
+	Created time.Time
+	Updated time.Time
+	Topic   string
 }
 
 type PostsModel struct {
-	DB *sql.DB
 }
 
 func (pm PostsModel) GetAll() ([]Post, error) {
 	var posts []Post
-	rows, err := pm.DB.Query("SELECT * FROM posts")
+
+	j, err := os.ReadFile("internal/models/json/data.json")
 	if err != nil {
-		return posts, err
+		log.Fatalf("Unable to open file due to %s", err)
 	}
 
-	for rows.Next() {
-		var post Post
-		err = rows.Scan(&post.ID, &post.Title, &post.Content, &post.Created, &post.Updated)
-		if err != nil {
-			return posts, err
-		}
-		posts = append(posts, post)
+	err = json.Unmarshal(j, &posts)
+	if err != nil {
+		log.Fatalf("Error marshaling json %s", err)
 	}
 
 	return posts, nil
 }
 
 func (pm PostsModel) GetById(id int) (Post, error) {
-	var post Post
-	if err := pm.DB.QueryRow("SELECT * FROM posts WHERE id = $1", id).Scan(&post.ID, &post.Title, &post.Content,
-		&post.Created, &post.Updated); err != nil {
-		return post, err
+	var posts []Post
+
+	j, err := os.ReadFile("internal/models/json/data.json")
+	if err != nil {
+		log.Fatalf("Unable to open file due to %s", err)
 	}
 
-	return post, nil
+	err = json.Unmarshal(j, &posts)
+	if err != nil {
+		log.Fatalf("Error marshaling json %s", err)
+	}
+
+	fmt.Println()
+
+	return posts[id-1], nil
 }
