@@ -13,8 +13,8 @@ FROM alpine:edge
 WORKDIR /app
 
 COPY --from=build /src/web .
-COPY --from=build ./tls/cert.pem /app/tls/cert.pem
-COPY --from=build ./tls/key.pem /app/tls/key.pem
+COPY --from=build /src/tls/cert.pem /app/tls/cert.pem
+COPY --from=build /src/tls/key.pem /app/tls/key.pem
 
 
 EXPOSE 443
