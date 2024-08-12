@@ -63,15 +63,15 @@ func main() {
 		ErrorLog:     slog.NewLogLogger(logger.Handler(), slog.LevelError),
 		TLSConfig:    tlsConfig,
 		IdleTimeout:  time.Minute,
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
+		ReadTimeout:  20 * time.Second,
+		WriteTimeout: 30 * time.Second,
 	}
 
 	logger.Info("starting server", "addr", srv.Addr)
 
 	//Serve https
-	//err = srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
-	err = srv.ListenAndServe()
+	err = srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
+	//err = srv.ListenAndServe()
 	logger.Error(err.Error())
 	os.Exit(1)
 }
