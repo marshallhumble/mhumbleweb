@@ -39,7 +39,7 @@ header, nav, main, footer {
     display: flex;
     justify-content: left;
     flex-direction: inherit;
-    border-bottom: 1px solid #E4E5E7;
+    border-bottom: none;
     padding-top: 17px;
     padding-bottom: 15px;
     background: #F7F9FA;
@@ -53,6 +53,8 @@ header, nav, main, footer {
 .topnav a:hover {
     background-color: #ddd;
     color: black;
+    border-bottom: 1px dotted #000;
+    text-decoration: none;
 }
 
 /* Add a color to the active/current link */

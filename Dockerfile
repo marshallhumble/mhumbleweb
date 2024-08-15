@@ -15,7 +15,7 @@ WORKDIR /app
 COPY --from=build /src/web .
 COPY --from=build /src/tls/cert.pem /app/tls/cert.pem
 COPY --from=build /src/tls/key.pem /app/tls/key.pem
-
+COPY --from=build /src/internal/models/json/data.json /app/internal/models/json/data.json
 
 EXPOSE 443
 ENTRYPOINT ["/app/web"]

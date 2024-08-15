@@ -27,7 +27,7 @@ func main() {
 		AddSource: true,
 	}))
 
-	addr := flag.String("addr", ":8080", "HTTP network address")
+	addr := flag.String("addr", ":443", "HTTP network address")
 
 	flag.Parse()
 
@@ -55,6 +55,7 @@ func main() {
 		},
 		MinVersion: tls.VersionTLS12,
 		MaxVersion: tls.VersionTLS13,
+		ServerName: "mhumble.io",
 	}
 
 	srv := &http.Server{
@@ -63,15 +64,23 @@ func main() {
 		ErrorLog:     slog.NewLogLogger(logger.Handler(), slog.LevelError),
 		TLSConfig:    tlsConfig,
 		IdleTimeout:  time.Minute,
-		ReadTimeout:  20 * time.Second,
-		WriteTimeout: 30 * time.Second,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
 	}
 
 	logger.Info("starting server", "addr", srv.Addr)
 
 	//Serve https
 	err = srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
+	//go func() {
+	//	log.Fatal(http.ListenAndServe("0.0.0.0:80", http.HandlerFunc(httpToHTTPS)))
+	//}()
 	//err = srv.ListenAndServe()
 	logger.Error(err.Error())
 	os.Exit(1)
 }
+
+// httpToHTTPS redirects all http to https
+//func httpToHTTPS(w http.ResponseWriter, r *http.Request) {
+//	http.Redirect(w, r, "https://"+r.Host+r.URL.String(), http.StatusMovedPermanently)
+//}
