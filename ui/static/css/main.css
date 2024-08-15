@@ -32,6 +32,10 @@ header, nav, main, footer {
     padding: 2px calc((100% - 800px) / 2) 0;
 }
 
+a {
+    text-decoration: none;
+}
+
 /* === NAV === */
 
 nav {
@@ -50,14 +54,14 @@ nav {
 nav a {
     margin-right: 1.5em;
     display: inline-block;
-    padding: 0;
-    text-decoration: dashed;
+    padding: 1px;
 }
 
 nav div {
     width: 50%;
     float: left;
 }
+
 
 nav div:last-child {
     text-align: right;
@@ -151,7 +155,6 @@ footer a {
     margin-right: 1.5em;
     display: inline-block;
     padding: 0;
-    text-decoration: dashed;
 }
 
 /* sticky footer */
