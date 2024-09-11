@@ -10,8 +10,6 @@ import (
 	"time"
 
 	"mhumbleweb/internal/models"
-
-	_ "github.com/mattn/go-sqlite3"
 )
 
 type application struct {
@@ -69,18 +67,8 @@ func main() {
 	}
 
 	logger.Info("starting server", "addr", srv.Addr)
-
-	//Serve https
 	err = srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
-	//go func() {
-	//	log.Fatal(http.ListenAndServe("0.0.0.0:80", http.HandlerFunc(httpToHTTPS)))
-	//}()
-	//err = srv.ListenAndServe()
+
 	logger.Error(err.Error())
 	os.Exit(1)
 }
-
-// httpToHTTPS redirects all http to https
-//func httpToHTTPS(w http.ResponseWriter, r *http.Request) {
-//	http.Redirect(w, r, "https://"+r.Host+r.URL.String(), http.StatusMovedPermanently)
-//}
