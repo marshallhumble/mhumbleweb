@@ -17,18 +17,18 @@
       ❯❯❯  docker compose pull && docker compose up -d && docker image prune -af
 
         [+] Pulling 12/12
-        ✔ adminer Pulled                                                        0.9s
-        ✔ db Pulled                                                             9.7s
-        ✔ ed6a7145c00e Pull complete                                            3.2s
+        ✔ adminer Pulled                                         0.9s
+        ✔ db Pulled                                              9.7s
+        ✔ ed6a7145c00e Pull complete                             3.2s
         ...
-        ✔ 0cc6c2d50cf6 Pull complete                                            8.3s
+        ✔ 0cc6c2d50cf6 Pull complete                             8.3s
     </code>
 </pre>
     <p>
         I am running adminer and MySQL in this docker container, and it pulls the new image with compose pull. Docker compose up
         as the Docker manual notes "Builds, (re)creates, starts, and attaches to containers for a service." and the `-d`
         flag runs the container in detached mode, in the background.
-
+        <br>
         The `docker image prune -af` command, cleans up any unused images that do nor have
         "at least one container associated to them." the `-a` is all, and `-f` is force.
         Then you will get something like this:
@@ -37,8 +37,8 @@
     <pre>
         <code class="language-bash line-numbers" data-prismjs-copy="Copy Me!">
         [+] Running 2/2
-        ✔ Container webfileshare-adminer-1  Running                               0.0s
-        ✔ Container webfileshare-db-1       Star...                               1.9s
+        ✔ Container webfileshare-adminer-1  Running                    0.0s
+        ✔ Container webfileshare-db-1       Starting                   1.9s
         Deleted Images:
         untagged: mysql@sha256:..
         deleted: ...
