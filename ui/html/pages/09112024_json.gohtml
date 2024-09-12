@@ -1,0 +1,50 @@
+{{ define "main"}}
+<h1>Upgrade a running Docker Container</h1>
+    <br>
+    <p>
+        I was looking to a way to upgrade a docker image in a running container, and had to do some digging to find it
+        so, I thought I would pass the knowledge on. This includes running it on a database with data in it that was
+        not deleted.
+    </p>
+    <br>
+    <p>
+        Overall it is pretty simple, but firs you will want to be in the same directory as your running Dockerfile.
+
+        Then run:
+    </p>
+<pre>
+    <code class="language-bash line-numbers" data-prismjs-copy="Copy Me!">
+      ❯❯❯  docker compose pull && docker compose up -d && docker image prune -af
+
+        [+] Pulling 12/12
+        ✔ adminer Pulled                                                        0.9s
+        ✔ db Pulled                                                             9.7s
+        ✔ ed6a7145c00e Pull complete                                            3.2s
+        ...
+        ✔ 0cc6c2d50cf6 Pull complete                                            8.3s
+    </code>
+</pre>
+    <p>
+        I am running adminer and MySQL in this docker container, and it pulls the new image with compose pull. Docker compose up
+        as the Docker manual notes "Builds, (re)creates, starts, and attaches to containers for a service." and the `-d`
+        flag runs the container in detached mode, in the background.
+
+        The `docker image prune -af` command, cleans up any unused images that do nor have
+        "at least one container associated to them." the `-a` is all, and `-f` is force.
+        Then you will get something like this:
+    </p>
+
+    <pre>
+        <code class="language-bash line-numbers" data-prismjs-copy="Copy Me!">
+        [+] Running 2/2
+        ✔ Container webfileshare-adminer-1  Running                               0.0s
+        ✔ Container webfileshare-db-1       Star...                               1.9s
+        Deleted Images:
+        untagged: mysql@sha256:..
+        deleted: ...
+
+        Total reclaimed space: 609.1MB
+        </code>
+    </pre>
+    Those images can stack up quick if you don't prune them!
+{{end}}
