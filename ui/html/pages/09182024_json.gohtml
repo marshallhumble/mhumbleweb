@@ -1,0 +1,112 @@
+{{define "main"}}
+
+<h1>Google's Safe Open for Go</h1>
+
+    <br>
+    <br>
+    <p>
+        The Google <a href="https://pkg.go.dev/github.com/google/safeopen">Safeopen Package</a> provides an extra level
+        of safety when taking in uploads from the web.
+        <br>
+        If the go proposal for <a href="https://github.com/golang/go/issues/67002#issuecomment-2243459398">Safer open
+            file functions</a> gets accepted then the safeopen package will be a duplicate, but that hasn't been
+        accepted yet.
+        <br>
+        Safeopen replaces the os.* part of file creation/open and only allows for a file to be created or opened in
+        a specific directory. This alleviates <a href="https://owasp.org/www-community/attacks/Path_Traversal">
+            directory/path transversal attacks</a> since the program can only access the specific folder and not
+        <i>../../../../etc/password</i> for example.
+        <br>
+        Here are 2 examples, both using standard go library for net/http, and only focusing on the file upload portion
+        in the server function.
+    </p>
+    <br>
+    <br>
+    <h2>Single File Example</h2>
+    <br>
+    <pre>
+        <code class="language-go line-numbers">
+        //Get the file from the form
+        file, fHeader, err := r.FormFile("uploadFile")
+	        if err != nil {
+		    app.logger.Error("Handler Error: ", err.Error(), "error")
+		    //Do something since there is an error:
+            app.render(w, r, http.StatusUnsupportedMediaType, "home.html", data)
+	        }
+        //Can't forget to close files
+        defer file.Close()
+
+        //Check against null upload
+        if fHeader.Size > 0 {
+            //Here we use safeopen.CreateAt just like we would os.Create()
+		    f, _ := safeopen.CreateAt("./uploads/", fHeader.Filename)
+		    defer f.Close()
+
+            //Then hand off to io like we would to actual data to filesystem
+            //if you skip this you will just end up with a zero byte file
+		    _, err := io.Copy(f, file)
+		    if err != nil {
+			return
+		    }
+	    }
+        </code>
+    </pre>
+    <br>
+    For the full example see My use of it <a href="https://github.com/marshallhumble/WebFileShare/blob/main/cmd/
+    web/handlersFiles.go">here on Github for WebFileServer</a>
+    <br>
+    <h2>Multi File Example</h2>
+    <br>
+    <pre>
+    <code>
+    multipartFormData := r.MultipartForm
+
+	//
+    for key, file := range multipartFormData.File["uploadFile"] {
+
+	//I want to limit uploads to 5
+    if key < 5 {
+
+		//I also want to rename the files that get uploaded so grabbing some items here to do that
+        ext := filepath.Ext(file.Filename)
+        nTime := fileDate(time.Now()) //Nicely format a date
+        id := app.sessionManager.GetInt(r.Context(), "authenticatedUserID")
+
+		//Add all the above, chop of the ext, convert any spaces and add custom name and ext
+        file.Filename = strings.ReplaceAll(strconv.Itoa(id)+strings.ToLower(strings.TrimSuffix(file.Filename,
+        filepath.Ext(file.Filename))), " ", "-") + "-" + fmt.Sprintf("%v", nTime) + ext
+
+		//And here again use safe open just the same way
+        dst, err := safeopen.CreateAt("./ui/static/pics", file.Filename)
+
+        if err != nil {
+            app.clientError(w, http.StatusBadRequest)
+            return
+		}
+
+		//and again just copy like normal
+        f, _ := file.Open()
+        io.Copy(dst, f)
+
+	    //I wanted to add distinct items into different fields in DB for my use case
+        switch key {
+            case 0:
+                form.Item1 = file.Filename
+            case 1:
+                form.Item2 = file.Filename
+            case 2:
+                form.Item3 = file.Filename
+            case 3:
+                form.Item4 = file.Filename
+            case 4:
+                form.Item5 = file.Filename
+            default:
+                form.Item1 = file.Filename
+            }
+        }
+    }
+    </code>
+    </pre>
+    <br>
+
+{{end}}
