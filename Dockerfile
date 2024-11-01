@@ -8,7 +8,7 @@ COPY . .
 RUN go mod download
 RUN go build -ldflags "-s -w" -o web ./cmd/web
 
-FROM alpine:edge
+FROM scratch
 
 WORKDIR /app
 
