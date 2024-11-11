@@ -2,15 +2,17 @@ ARG GO_VERSION=1.23.3
 
 # First stage: build the executable.
 FROM golang:${GO_VERSION}-alpine AS build
+RUN apk add --no-cache tzdata
 ENV CGO_ENABLED=0
-ENV TZ="America/Chicago"
-RUN date
 WORKDIR /src
 COPY . .
 RUN go mod download
 RUN go build -ldflags "-s -w" -o web ./cmd/web
 
 FROM scratch
+
+COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
+ENV TZ=America/New_York
 
 WORKDIR /app
 
