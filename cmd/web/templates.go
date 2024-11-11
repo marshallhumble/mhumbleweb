@@ -32,18 +32,8 @@ func humanDate(t time.Time) string {
 	return t.Format("02 Jan 2006")
 }
 
-func weekdayWithTimezone() time.Weekday {
-	//init the loc
-	loc, _ := time.LoadLocation("America/Chicago")
-
-	//set timezone,
-	return time.Now().In(loc).Weekday()
-
-}
-
 var functions = template.FuncMap{
 	"humanDate": humanDate,
-	"getDoW":    weekdayWithTimezone,
 }
 
 func newTemplateCache() (map[string]*template.Template, error) {
