@@ -10,6 +10,7 @@
     --color-blue: #014c70;
     --color-blue-dark: #002b3c;
     --color-black: #333333;
+    --color-dark-grey: #6a6a6a;
     --color-cloud-light: #FAFAFA;
     --color-cloud: #F7F7F7;
     --color-cloud-dark: #f1f1f1;
@@ -53,11 +54,11 @@ body {
 }
 
 .navbar a:hover {
-    background-color: hsl(0, 0%, 10%);
+    background-color: var(--color-dark-grey);
 }
 
 .navbar a{
-    color: var(--color-cloud-light);
+    color: var(--color-cloud);
     padding: 15px;
     display: block;
     text-align: center;
@@ -157,7 +158,7 @@ footer a {
 }
 
 footer i {
-    color: white;
+    color: var(--color-cloud);
 }
 
 /* sticky footer */
@@ -170,6 +171,6 @@ footer {
 .licenses {
     font-size: var(--size-xxs);
     float: right;
-    color: white;
+    color: var(--color-cloud);
 }
 
