@@ -3,7 +3,8 @@ ARG GO_VERSION=1.23.3
 # First stage: build the executable.
 FROM golang:${GO_VERSION}-alpine AS build
 ENV CGO_ENABLED=0
-ENV TZ=CST
+ENV TZ="America/Chicago"
+RUN date
 WORKDIR /src
 COPY . .
 RUN go mod download
@@ -11,7 +12,6 @@ RUN go build -ldflags "-s -w" -o web ./cmd/web
 
 FROM scratch
 
-ENV TZ=CST
 WORKDIR /app
 
 COPY --from=build /src/web .
