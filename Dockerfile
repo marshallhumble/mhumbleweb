@@ -11,7 +11,7 @@ RUN go build -ldflags "-s -w" -o web ./cmd/web
 
 FROM scratch
 
-COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
+COPY --from=build /usr/share/zoneinfo /usr/share/zoneinfo
 ENV TZ=America/New_York
 
 WORKDIR /app
