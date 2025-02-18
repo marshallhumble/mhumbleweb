@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Password Policies: Why Common Password Policies Fail and What Works Bette</title>
+</head>
+<body>
+<h1>Modern Password Policies: Why Common Password Policies Fail and What Works Better</h1>
+
+<h2>Introduction</h2>
+<p>Passwords remain the primary method of authentication, but outdated password policies often lead to security risks
+    and user frustration.</p>
+
+<p>I work with a lot og government and healthcare customers, and time and time again I see almost the same password
+    policies or a minor variation of the formula:
+<ul>
+    <li>8-16 characters</li>
+    <li>1 lower, 1 upper case character</li>
+    <li>1 number and 1 special character</li>
+    <li>Max expiration 60 days</li>
+    <li>Copy/paste disabled in form fields</li>
+</ul>
+<p>This is often driven by larger customers, smaller companies doing business with larger customers will often align
+    policies so that security questions/vendor audits can be met.
+</p>
+
+<h2>Why These Common Password Policies Can Compromise Security</h2>
+<ul>
+    <li><strong>Overly Complex Requirements Lead to Weak Passwords:</strong> Users create predictable passwords like
+        <code>P@ssword1!</code>, which attackers can guess easily. (I even see this when security teams create
+        passwords for vendors)</li>
+    <li><strong>Frequent Expiration Encourages Reuse:</strong> Changing passwords every 60-90 days results in minor
+        variations that attackers can predict.</li>
+    <li><strong>Arbitrary Length Limits Are Harmful:</strong> Restricting passwords to 8-16 characters prevents the
+        use of more secure passphrases.</li>
+    <li><strong>Not Addressing Credential Reuse:</strong> Users commonly reuse passwords across multiple sites,
+        increasing the risk of credential stuffing attacks.</li>
+    <li><strong>Reliance on User Behavior Instead of System Enforcement:</strong> Without MFA, even strong passwords
+        remain vulnerable to phishing.</li>
+</ul>
+
+<h2>What Works Better: Modern Password Policy Best Practices and New NIST Guidelines</h2>
+
+<p>The current draft of <a href="https://pages.nist.gov/800-63-4/sp800-63b.html">NIST 800-63B Guidance</a> has some
+    changes that break away from these traditional policies</p>
+
+<p>Here is the password guidance listed on the DRAFT of 800-63B, as of this writing (may change):</p>
+
+<h3>3.1.1.1. Password Authenticators</h3>
+
+<p>Passwords <b>SHALL</b> either be chosen by the subscriber or assigned randomly by the CSP.</p>
+
+<p>If the CSP disallows a chosen password because it is on a blocklist of commonly used, expected, or compromised values
+(see Sec. 3.1.1.2), the subscriber <b>SHALL</b> be required to choose a different password. Other complexity
+requirements for passwords <b>SHALL NOT</b> be imposed. A rationale for this is presented in Appendix A,
+Strength of Passwords.</p>
+
+<h3>Password Verifiers</h3>
+<p>The following requirements apply to passwords:</p>
+
+<ol>
+    <li>Verifiers and CSPs SHALL require passwords to be a minimum of eight characters in length and SHOULD require
+        passwords to be a minimum of 15 characters in length.</li>
+    <li>Verifiers and CSPs SHOULD permit a maximum password length of at least 64 characters.</li>
+    <li>Verifiers and CSPs SHOULD accept all printing ASCII [RFC20] characters and the space character in passwords.</li>
+    <li>Verifiers and CSPs SHOULD accept Unicode [ISO/ISC 10646] characters in passwords. Each Unicode code point SHALL
+        be counted as a single character when evaluating password length.</li>
+    <li>Verifiers and CSPs SHALL NOT impose other composition rules (e.g., requiring mixtures of different character
+        types) for passwords.</li>
+    <li>Verifiers and CSPs SHALL NOT require users to change passwords periodically. However, verifiers SHALL force a
+        change if there is evidence of compromise of the authenticator.</li>
+    <li>Verifiers and CSPs SHALL NOT permit the subscriber to store a hint that is accessible to an unauthenticated
+        claimant.</li>
+    <li>Verifiers and CSPs SHALL NOT prompt subscribers to use knowledge-based authentication (KBA) (e.g.,
+        “What was the name of your first pet?”) or security questions when choosing passwords.</li>
+    <li>Verifiers SHALL verify the entire submitted password (i.e., not truncate it).</li>
+</ol>
+
+<h2>Let's look more in depth to the why of the above</h2>
+
+<p>First however I want to point out that there are 2 points to security. The technical control and the human aspect.</p>
+<p>We often assume if we make a good enough technical control and ignore the person using it or implementing it then
+everything will be ok. These new NIST changes are taking the human factor into account as well as the technical.</p>
+
+<p>Many of these issues can be alleviated with a password manager. I HIGHLY suggest using one. Most of the major
+    brands on the market pretty much do the same thing, and now they compete on extras. See what works for you. Try not
+    to avoid using one the has been broken into multiple times, where the lead dev was running an unpatched
+    Plex server on his development machine though...</p>
+
+<h3>1. Enforce a Minimum Length but Encourage Passphrases</h3>
+<p><span class="do">✅ Do:</span> Require at least <strong>13-17 characters</strong> and encourage passphrases
+    like <em>"correct horse battery staple"</em>.</p>
+<br>
+<p>Why 12-18?<a href="https://www.darkreading.com/cyberattacks-data-breaches/8-character-passwords-can-be-cracked-in-less-than-60-minutes">
+        8 character passwords can be cracked in under 60 minutes</a> 7 character almost instantly. We don't start to get
+into 'safe' territory until 13 characters with a mix upper and lower case, numbers, symbols and special character.
+    For comparison that is 17 characters only using lower case.</p>
+<p>Granted in this example there is only 1 gpu in use, using brcrypt and time can be reduced to a point, but the lowest
+    'green' value is 11 <i>Billion</i> years for time to crack.</p>
+<br>
+<p><span class="dont">❌ Don’t:</span> Force unnecessary complexity rules.</p>
+<p>This is where we need to consider the human. The above control works great from a technical standpoint, but if it is
+too burdensome for users to use then they will find shortcuts.</p>
+<br>
+<p>The more complex we make the rules for password the likelihood that the password is written down, or on a sticky
+    note on the monitor goes up exponentially. As a veteran who was taught to keep 'my head on a swivel', and someone
+    who works in cybersecurity and is naturally curious I tend to pay attention to my environment.</p>
+<br>
+<p>I can personally recall many a customer facing office setting where there is a shared computer, and the staff has
+just taped a password to the monitor. The use of shared accounts is of course another problem but the reason the staff
+    can’t recall the password is that it is overly complex.</p>
+<br>
+<p>Without going too deep into the science of memory here I think we can all agree that a 17 letter passphrase is
+    more memorable than say: <i>w?zN.4>3EGF(B;^MZ</i> granted when I only look at the technical controls I would
+    vastly prefer the latter over a passphrase but we again, have to consider the human and find a balance between
+    technical controls and usability.</p>
+<br>
+<p>Further people act in predictable ways, changing L to 7 or E to 3 for example or an A to @, capilizing the first
+    letter, etc. Making these optional with a smart minimum length can increase security.</p>
+<br>
+<br>
+<h3>2. Allow Longer Passwords and Support Password Managers</h3>
+<p><span class="do">✅ Do:</span> Allow passwords up to <strong>64+ characters</strong> to accommodate password managers.</p>
+<p><span class="dont">❌ Don’t:</span> Impose arbitrary length restrictions.</p>
+<br>
+<p>Amazingly there are many sites out there that will break if your password is too long. I find this all over, I can
+generally guess that if the design of the sites looks a little dated and/or the industry is change adverse then
+I can expect that a password longer than 16 will not work, and I will have to reset it to login.</p>
+<br>
+<p>Another part of supporting password managers is enabling copy and paste. The possibility of transcription
+    error goes up massively when I must manually enter the password vs the password manager filling it or copying
+    from the password manager.</p>
+<br>
+<p>This should include other data like bank information. Why should we enter that manually instead of copy + paste
+    from the bank. Again, the possibility of error goes up when it is manual.</p>
+<br>
+<h3>3. Remove Unnecessary Expiration Policies</h3>
+<p><span class="do">✅ Do:</span> Require password changes <strong>only if compromised</strong>.</p>
+<p><span class="dont">❌ Don’t:</span> Force expiration every 90 days without a valid reason.</p>
+<br>
+<p>New NIST guidelines are to not force a change. Many places have 60 or fewer days set for password change. This has
+been shown to increase bad habits like writing down passwords, using weak passwords or rotating 1-2 letters to
+'trick' the system into seeing it as a new password. The more painful we make this process, the more time users are going
+to spend trying to get around it.</p>
+<br>
+<br>
+<h3>4. Ban Common and Compromised Passwords</h3>
+<p><span class="do">✅ Do:</span> Check against a database of <strong>known breached credentials</strong>.</p>
+<p><span class="dont">❌ Don’t:</span> Allow common passwords like <code>123456</code> or <code>password</code>.</p>
+<br>
+<p>Malicious actors use these as dictionaries to conduct attacks against systems. This can take some work to implement,
+but many third party solutions can do it for you.</p>
+<br>
+<br>
+<h3>5. Implement Multi-Factor Authentication (MFA)</h3>
+<p><span class="do">✅ Do:</span> Require <strong>MFA wherever possible</strong> using authenticator apps or security keys.</p>
+<p><span class="dont">❌ Don’t:</span> Rely solely on passwords.</p>
+<br>
+<p>Microsoft notes that accounts that have MFA 99% less likely to be hacked. However, that number doesn't really hold up
+when we look at other sources.
+    <a href="https://www.linkedin.com/pulse/stop-insanity-mfa-does-99-attacks-roger-grimes/">10-30%</a> is probably more
+correct, and will go down as we see more and more creative ways groups use to get MFA tokens. Even with those numbers
+    using MFA is still recommended.</p>
+<p>Physical keys like FIDO compliant ones from various vendors are great (until a user looses one) phish resistant
+    layer of security. Again we should look at what works best for our orgs.</p>
+<br>
+<h3>6. Encourage (or Require) a Password Manager</h3>
+<p><span class="do">✅ Do:</span> Recommend password managers for <strong>generating and storing</strong> secure passwords.</p>
+<p><span class="dont">❌ Don’t:</span> Expect users to remember multiple complex passwords.</p>
+<br>
+<p>I mentioned this above, companies should get this for their users. A spill or breach of information can be costly,
+    for most organizations the offset of risk more than covers the price of a password manager.</p>
+<br>
+<p>Again do your research here, if you are considering FedRAMP, then the only option is Keeper at the moment.</p>
+<br>
+<br>
+<h2>Conclusion: Smarter Password Policies for Stronger Security</h2>
+<p>Traditional password policies often <strong>do more harm than good</strong> by encouraging weak habits. Instead,
+    focus on <strong>longer passphrases, checking against breached credentials, supporting password managers, and
+         enforcing MFA</strong>.</p>
+<p>By adopting these modern best practices, organizations can improve security without frustrating users, leading to
+    better compliance and a stronger security posture.</p>
+</body>
+</html>
