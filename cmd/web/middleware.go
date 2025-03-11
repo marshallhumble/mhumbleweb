@@ -7,9 +7,9 @@ import (
 
 func commonHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Security-Policy", "default-src 'self' https://*.fontawesome.com/ "+
-			"'unsafe-inline'; style-src 'self' fonts.googleapis.com https://*.fontawesome.com/ 'unsafe-inline'; "+
-			"font-src fonts.gstatic.com https://*.fontawesome.com/; ")
+		w.Header().Set("Content-Security-Policy", "base-uri 'self'; style-src 'self' 'unsafe-inline' "+
+			"https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css; "+
+			"font-src https://kit.fontawesome.com/c2a6703368.js https://ka-f.fontawesome.com/releases/v6.7.2/;")
 		w.Header().Set("Referrer-Policy", "origin-when-cross-origin")
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.Header().Set("X-Frame-Options", "deny")
