@@ -1,28 +1,32 @@
 {{define "main"}}
 
     <h1>Shift Left: Why Security Should Start Early in Development</h1>
-
+<br><br>
     <h2>Introduction</h2>
+<br>
     <p>Traditional security practices often come too late in the Software Development Life Cycle (SDLC), leading to
         vulnerabilities that are costly and time-consuming to fix. Shifting security left means integrating security
         practices early in the development process, reducing risk and minimizing technical debt.</p>
-
+<br>
     <h2>Why Traditional Security Approaches Fail</h2>
+<br>
     <ul>
         <li><strong>Security as an Afterthought:</strong> Testing security only in QA or post-production leads to costly fixes.</li>
         <li><strong>Increased Cost of Fixing Late-Stage Issues:</strong> A vulnerability found in production is significantly more expensive to remediate.</li>
         <li><strong>Lack of Developer Awareness:</strong> Without security training, developers unintentionally introduce vulnerabilities.</li>
         <li><strong>Compliance and Audit Pressures:</strong> Security fixes at the last minute create delays and inefficiencies.</li>
     </ul>
-
+<br>
     <p>The <a href="https://www.researchgate.net/figure/BM-System-Science-Institute-Relative-Cost-of-Fixing-Defects_fig1_255965523">
             Systems Science Institute at IBM</a> and <a href="https://www.nist.gov/system/files/documents/director/planning/report02-3.pdf">
     NIST's</a> reports agree that finding bugs earlier in development can lead to massive cost and time reduction.
     It can cost 6 times as much to fix a bug in during implementation than to fix one identified during design.
     The cost to fix bugs found during the testing phase can be 15x more than those found during design.</p>
-
+    <br>
+    <br>
 
     <h2>Benefits of Shifting Security Left</h2>
+    <br>
     <ul>
         <li><strong>Faster and Cheaper Remediation</strong></li>
         <li><strong>Better Developer Security Awareness</strong></li>
@@ -61,6 +65,7 @@
         <br>
 
     <h3>2. Automate Security in CI/CD Pipelines</h3>
+    <br>
     <ul>
         <li>Use tools inside the IDE, linting (readable code is more secure!) and securing coding plugins</li>
         <li>Use <strong>SAST</strong> (Static Application Security Testing) tools to scan code before merging.</li>
@@ -86,6 +91,7 @@
         <br>
 
     <h3>3. Enforce Secure Dependencies Management</h3>
+    <br>
     <ul>
         <li>Use tools like <strong>Snyk, OWASP Dependency-Check</strong>, and <strong>GitHub Dependabot</strong> to scan for vulnerabilities.</li>
         <li>Set up <strong>automated alerts</strong> for dependency vulnerabilities.</li>
@@ -100,17 +106,20 @@
         </ul>
 
     <h3>4. Implement Security Testing Early and Continuously</h3>
+    <br>
     <ul>
         <li>Conduct <strong>security unit tests</strong> alongside functional tests.</li>
         <li>Use <strong>fuzz testing</strong> to identify unexpected vulnerabilities.</li>
         <li>Run <strong>container security scanning</strong> if using Docker/Kubernetes.</li>
     </ul>
+    <br>
         <p>Here I will list out some fuzzing tools:</p>
         <ul>
             <li>Jazzer.js (JS), Fuzzilli (JS), Node-Fuzz (JS), Ahteris (Python), FuzzyWuzzy (Python), Radamsa (Python),
             Go native fuzzing library that works alongside Go test packages, Go-Fuzz (Go), gfuzz (Go)</li>
         </ul>
-
+    <br>
+    <br>
     <h3>5. Use Infrastructure as Code (IaC) Security Checks</h3>
     <ul>
         <li>Use <strong>Terraform, Ansible, or CloudFormation</strong> security scanning tools.</li>
@@ -118,6 +127,7 @@
     </ul>
         <br>
         <p>Here are tools for checking IaC:</p>
+    <br>
         <ul>
             <li>Checkov: Scans Terraform, Kubernetes, CloudFormation, and Docker files for security misconfigurations.
                 Supports AWS, Azure, and Google Cloud security policies. This can be used in the CI/CD pipeline</li>
@@ -133,8 +143,9 @@
             <li>Docker Bench for Security: Evaluates Docker Daemon security settings based on CIS Benchmarks.</li>
             <li>Docker Desktop can also be used to view image details and CVEs, and issues with containers</li>
         </ul>
-
+    <br><br>
     <h3>6. Train Developers in Security Awareness</h3>
+    <br>
     <ul>
         <li>Provide <strong>regular security training</strong> and simulated attack exercises.</li>
         <li>Encourage developers to <strong>participate in bug bounty programs</strong>.</li>
