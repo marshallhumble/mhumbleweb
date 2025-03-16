@@ -1,18 +1,14 @@
 {{ define "main"}}
-<h1>Upgrade a running Docker Container</h1>
-    <br>
+    <h1>Upgrade a Running Docker Container</h1>
     <p>
-        I was looking to a way to upgrade a docker image in a running container, and had to do some digging to find it
-        so, I thought I would pass the knowledge on. This includes running it on a database with data in it that was
-        not deleted.
+        I was looking for a way to upgrade a Docker image in a running container and had to do some digging to find it.
+        So, I thought I would pass the knowledge on. This method also works for upgrading a database container while preserving its data.
     </p>
-    <br>
     <p>
-        Overall it is pretty simple, but firs you will want to be in the same directory as your running Dockerfile.
-
-        Then run:
+        Overall, the process is straightforward. First, ensure you are in the same directory as your Docker Compose file.
+        Then, run the following command:
     </p>
-<pre>
+    <pre>
     <code class="language-bash line-numbers" data-prismjs-copy="Copy Me!">
       ❯❯❯  docker compose pull && docker compose up -d && docker image prune -af
 
@@ -25,15 +21,15 @@
     </code>
 </pre>
     <p>
-        I am running adminer and MySQL in this docker container, and it pulls the new image with compose pull. Docker compose up
-        as the Docker manual notes "Builds, (re)creates, starts, and attaches to containers for a service." and the `-d`
-        flag runs the container in detached mode, in the background.
-        <br>
-        The `docker image prune -af` command, cleans up any unused images that do nor have
-        "at least one container associated to them." the `-a` is all, and `-f` is force.
-        Then you will get something like this:
+        In my setup, I am running Adminer and MySQL in this Docker container. The command <code>docker compose pull</code> fetches the latest image versions.
+        The <code>docker compose up</code> command, as noted in the Docker documentation, "Builds, (re)creates, starts, and attaches to containers for a service."
+        The <code>-d</code> flag runs the container in detached mode, allowing it to continue running in the background.
     </p>
-
+    <p>
+        The final command, <code>docker image prune -af</code>, cleans up any unused images that do not have
+        at least one container associated with them. The <code>-a</code> flag removes all unused images, and <code>-f</code> forces deletion without confirmation.
+        Running this regularly helps free up disk space, as unused images can accumulate quickly.
+    </p>
     <pre>
         <code class="language-bash line-numbers" data-prismjs-copy="Copy Me!">
         [+] Running 2/2
@@ -46,5 +42,7 @@
         Total reclaimed space: 609.1MB
         </code>
     </pre>
-    Those images can stack up quick if you don't prune them!
+    <p>
+        Over time, these unused images can accumulate, so it’s good practice to prune them periodically to free up space.
+    </p>
 {{end}}
