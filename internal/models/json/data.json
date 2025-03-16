@@ -30,5 +30,37 @@
     "Created": "2025-02-18T12:00:00Z",
     "Updated": "2025-02-18T12:00:00Z",
     "Topic": "Security"
+  },
+  {
+    "Id": 5,
+    "Title":"Shift Left: Why Security Should Start Early in Development",
+    "Content": "03142025_json.gohtml",
+    "Created": "2025-03-14T12:00:00Z",
+    "Updated": "2025-03-14T12:00:00Z",
+    "Topic": "Security"
+  },
+  {
+    "Id": 6,
+    "Title":"Infrastructure as Code (IaC) Security in CI/CD",
+    "Content": "03012025_json.gohtml",
+    "Created": "2025-03-01T12:00:00Z",
+    "Updated": "2025-03-01T12:00:00Z",
+    "Topic": "Security"
+  },
+  {
+    "Id": 7,
+    "Title":"Static Application Security Testing (SAST) in CI/CD",
+    "Content": "03162025_json.gohtml",
+    "Created": "2025-03-16T12:00:00Z",
+    "Updated": "2025-03-16T12:00:00Z",
+    "Topic": "Security"
+  },
+  {
+    "Id": 8,
+    "Title":"Dynamic Application Security Testing (DAST) in CI/CD",
+    "Content": "03102025_json.gohtml",
+    "Created": "2025-03-10T12:00:00Z",
+    "Updated": "2025-03-10T12:00:00Z",
+    "Topic": "Security"
   }
 ]

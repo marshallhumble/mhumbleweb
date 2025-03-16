@@ -1,0 +1,90 @@
+{{define "main"}}
+<h1>Dynamic Application Security Testing (DAST) in CI/CD</h1>
+<p>DAST tools analyze running applications to detect vulnerabilities such as SQL injection, cross-site scripting (XSS), and authentication flaws.</p>
+
+<h2>✅ Using OWASP ZAP for Web Application Security</h2>
+<pre class="code-block">
+name: DAST Scan - OWASP ZAP
+on: [push, pull_request]
+jobs:
+  zap_scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Run OWASP ZAP
+        run: docker run -t owasp/zap2docker-stable zap-baseline.py -t http://localhost:3000
+    </pre>
+
+<h2>✅ Using Burp Suite for API Security</h2>
+<pre class="code-block">
+name: DAST Scan - Burp Suite
+on: [push, pull_request]
+jobs:
+  burp_scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Run Burp Suite Scanner
+        run: docker run -t portswigger/burpsuite scan --url=http://localhost:5000
+    </pre>
+
+<h2>✅ Using Wapiti for Python Web Security</h2>
+<pre class="code-block">
+name: DAST Scan - Wapiti
+on: [push, pull_request]
+jobs:
+  wapiti_scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Install Wapiti
+        run: pip install wapiti3
+      - name: Run Wapiti
+        run: wapiti -u http://localhost:5000
+    </pre>
+
+<h2>DAST Tools Comparison</h2>
+<table border="1" cellspacing="0" cellpadding="5">
+    <tr>
+        <th>Tool</th>
+        <th>Best for</th>
+        <th>Supported Platforms</th>
+        <th>Free/Paid</th>
+    </tr>
+    <tr>
+        <td>OWASP ZAP</td>
+        <td>Web app security scanning</td>
+        <td>Web Applications</td>
+        <td>Free</td>
+    </tr>
+    <tr>
+        <td>Burp Suite</td>
+        <td>API and web security testing</td>
+        <td>APIs, Web Applications</td>
+        <td>Free/Paid</td>
+    </tr>
+    <tr>
+        <td>Wapiti</td>
+        <td>Python web security scanning</td>
+        <td>Python Web Apps</td>
+        <td>Free</td>
+    </tr>
+    <tr>
+        <td>Netsparker (Invicti)</td>
+        <td>Enterprise web vulnerability scanning</td>
+        <td>Web Applications</td>
+        <td>Paid</td>
+    </tr>
+    <tr>
+        <td>Acunetix</td>
+        <td>Comprehensive DAST scanning</td>
+        <td>Web, APIs</td>
+        <td>Paid</td>
+    </tr>
+</table>
+
+<p>By integrating these security tools into your CI/CD pipeline, you can ensure early detection of vulnerabilities and reduce security risks before deployment.</p>
+{{end}}
