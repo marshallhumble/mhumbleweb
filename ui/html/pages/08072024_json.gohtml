@@ -1,26 +1,20 @@
 {{define "main"}}
 
-	<h1>Using Json in Go</h1>
-	<br>
+	<h1>Using JSON in Go</h1>
 	<p>
-	I'm always consistently impressed in how Go works. From <i>actually</i> secure by default to minor tasks.
-			Go always seems to be made in a logical way that lets you just get the work done.
-			</p>
-		<br>
-			<p>
-			Similarly, Json in Go is fairly simple and uses the encoding/json module which is Go’s implementation
-			of the <a href="https://datatracker.ietf.org/doc/html/rfc8259">rfc8259</a> (Go's site uses the old number,
-			7159, now obsolete) Json Standard. Json is used in many places on the web, commonly in APIs or to send data
-			to a front end server running JavaScript.
-			</p>
-		<br>
-		<p>
-			Go calls the encoding of Json marshal()-ing (serializing) and unmarshal()-ing (deserializing) a terminology
-			of which I am a fan of.
-			As expected for Go it is straightforward. You simply make a struct which defines that <i>data structure</i>
-			of the Json. As a note, field names must match exactly.
-		</p>
-		<br>
+		I'm always consistently impressed by how Go works. From <i>actually</i> being secure by default to handling minor tasks efficiently,
+		Go always seems to be designed in a logical way that lets you just get the work done.
+	</p>
+	<p>
+		Similarly, JSON in Go is fairly simple and uses the <code>encoding/json</code> module, which is Go’s implementation
+		of the <a href="https://datatracker.ietf.org/doc/html/rfc8259">RFC 8259</a> JSON Standard. JSON is widely used on the web, commonly in APIs or to send data
+		to a frontend server running JavaScript.
+	</p>
+	<p>
+		In Go, encoding JSON is referred to as marshaling (serializing), and decoding is called unmarshaling (deserializing).
+		As expected in Go, this is straightforward. You simply define a struct that represents the JSON <i>data structure</i>.
+		Field names must match exactly.
+	</p>
 	<pre>
     <code class="language-go line-numbers" data-prismjs-copy="Copy Me!">
 package main
@@ -32,12 +26,12 @@ import (
 )
 
 func main() {
-	type Teams struct {
-		Name string
-		City string
+	type Team struct {
+		Name string `json:"Name"`
+		City string `json:"City"`
 	}
 
-	teams := []Teams{
+	teams := []Team{
 		{"Spurs", "San Antonio"},
 		{"Mavericks", "Dallas"},
 		{"Rockets", "Houston"},
@@ -52,32 +46,24 @@ func main() {
 }
     </code>
 	</pre>
-
-	Which will return:
+	<p>Which will return:</p>
 	<pre>
 		<code class="language-json" data-prismjs-copy="Copy Me!">
 [{"Name":"Spurs","City":"San Antonio"},{"Name":"Mavericks","City":"Dallas"},{"Name":"Rockets","City":"Houston"}]
 		</code>
 	</pre>
-	<br>
-		<p>
-			You can also replace <i>fmt.Println(string(b))</i> with the following to get nice pretty printed Json:
-		</p>
-	<br>
-<pre>
+	<p>
+		You can also replace <code>fmt.Println(string(b))</code> with the following to get nicely formatted JSON:
+	</p>
+	<pre>
 	<code class="language-go">
 var out bytes.Buffer
-json.Indent(&out, b, "=", "\t")
+json.Indent(&out, b, "", "\t")
 out.WriteTo(os.Stdout)
 	</code>
 </pre>
-
-	<br>
-	<p>
-	This returns:
-	</p>
-	<br>
-<pre>
+	<p>This returns:</p>
+	<pre>
 	<code class="language-json">
 [
 	{
@@ -85,8 +71,8 @@ out.WriteTo(os.Stdout)
 		"City": "San Antonio"
 	},
 	{
-		"Name": "Stars",
-		"City": "Mavericks"
+		"Name": "Mavericks",
+		"City": "Dallas"
 	},
 	{
 		"Name": "Rockets",
@@ -95,96 +81,82 @@ out.WriteTo(os.Stdout)
 ]
 	</code>
 </pre>
-<br>
 	<p>
-		For a little more complex example like let's add the wins and losses in for each team for the 2023-2024 season.
-		We are going to nest the scores in the existing Json like so:
-		<pre>
-		<code class="language-json">
+		For a slightly more complex example, let's add the wins and losses for each team during the 2023-2024 season.
+		We will nest the scores in the existing JSON structure like so:
+	</p>
+	<pre>
+	<code class="language-json">
 [
 	{
-		Name": "Spurs",
+		"Name": "Spurs",
 		"City": "San Antonio",
 		"Scores": {
 			"Wins": 22,
-			"Loss": 60,
-		},
+			"Losses": 60
+		}
 	}
 ]
-
-		</code>
+	</code>
 	</pre>
-	<p>
-		We would first need to create another struct to tell Go how to handle the data:
-	</p>
-<pre>
+	<p>To achieve this, we need to define an additional struct:</p>
+	<pre>
 	<code class="language-go">
 type (
-	Teams struct {
-		Name 	string
-		City 	string
-		Scores 	Scores
+	Team struct {
+		Name   string `json:"Name"`
+		City   string `json:"City"`
+		Scores Scores `json:"Scores"`
 	}
-	Scores	struct {
-		Wins 	int
-		Loss  	int
+	Scores struct {
+		Wins  int `json:"Wins"`
+		Losses int `json:"Losses"`
 	}
 )
 	</code>
 </pre>
-<br>
-		<p>
-			Which we can then use for our Json:
-		</p>
-		<br>
-<pre>
+	<p>
+		Which we can then use in our Go program:
+	</p>
+	<pre>
 	<code class="language-go">
-type (
-	Teams struct {
-		Name   string
-		City   string
-		Scores []Scores
-	}
-	Scores struct {
-		Wins int
-		Loss int
-	}
-)
-
 func main() {
-	t := `{
-		Name": "Spurs",
-		"City": "San Antonio",
-		"Scores": {
-			"Wins": 22,
-			"Loss": 60,
+	team := Team{
+		Name: "Spurs",
+		City: "San Antonio",
+		Scores: Scores{
+			Wins: 22,
+			Losses: 60,
 		},
-	}`
+	}
 
-b, err := json.Marshal(t)
+	b, err := json.Marshal(team)
 	if err != nil {
 		log.Fatalf("Unable to marshal due to %s\n", err)
 	}
 
-fmt.Println(string(b))
+	fmt.Println(string(b))
 }
 	</code>
 </pre>
-		<br>
-		<p>
-			Which we can then see is marshalled correctly:
-		</p>
-<pre>
+	<p>Which produces:</p>
+	<pre>
 	<code class="language-json">
-"{\n\t\t\"Name\": \"Spurs\",\n\t\t\"City\": \"San Antonio\",\n\t\t\"Scores\": {\n\t\t\t\"Wins\": 22,\n\t\t\t\"Loss\": 60,\n\t\t},\n\t}"
+{
+	"Name": "Spurs",
+	"City": "San Antonio",
+	"Scores": {
+		"Wins": 22,
+		"Losses": 60
+	}
+}
 	</code>
 </pre>
-		<br>
-		<p>
-			Go also allows for a nice html escaped version of printing that will then be safe to embed in script tags.
-			I'll just snag the example here from the Go Docs since it is pretty simple:
-		</p>
-<pre>
+	<p>
+		Go also allows for an HTML-escaped version of JSON output, making it safe to embed inside script tags.
+		The following example from the Go documentation demonstrates this:
+	</p>
+	<pre>
 	<code class="language-go">
 package main
 
@@ -201,14 +173,15 @@ func main() {
 }
 	</code>
 </pre>
-<br>
-<p>
-	Which returns:
-</p>
-<pre>
+	<p>Which returns:</p>
+	<pre>
 	<code class="language-json">
 {"Name":"\u003cb\u003eHTML content\u003c/b\u003e"}
 	</code>
 </pre>
+	<p>
+		Understanding JSON in Go is essential for working with APIs and structured data. The language’s encoding/json package makes
+		it simple to serialize and deserialize JSON efficiently. Happy coding!
+	</p>
 
 {{end}}
