@@ -1,20 +1,24 @@
 {{define "main"}}
 
 	<h1>Using JSON in Go</h1>
+	<br>
 	<p>
 		I'm always consistently impressed by how Go works. From <i>actually</i> being secure by default to handling minor tasks efficiently,
 		Go always seems to be designed in a logical way that lets you just get the work done.
 	</p>
+	<br>
 	<p>
 		Similarly, JSON in Go is fairly simple and uses the <code>encoding/json</code> module, which is Go’s implementation
 		of the <a href="https://datatracker.ietf.org/doc/html/rfc8259">RFC 8259</a> JSON Standard. JSON is widely used on the web, commonly in APIs or to send data
 		to a frontend server running JavaScript.
 	</p>
+	<br>
 	<p>
 		In Go, encoding JSON is referred to as marshaling (serializing), and decoding is called unmarshaling (deserializing).
 		As expected in Go, this is straightforward. You simply define a struct that represents the JSON <i>data structure</i>.
 		Field names must match exactly.
 	</p>
+	<br>
 	<pre>
     <code class="language-go line-numbers" data-prismjs-copy="Copy Me!">
 package main
@@ -46,15 +50,19 @@ func main() {
 }
     </code>
 	</pre>
+	<br>
 	<p>Which will return:</p>
+	<br>
 	<pre>
 		<code class="language-json" data-prismjs-copy="Copy Me!">
 [{"Name":"Spurs","City":"San Antonio"},{"Name":"Mavericks","City":"Dallas"},{"Name":"Rockets","City":"Houston"}]
 		</code>
 	</pre>
+	<br>
 	<p>
 		You can also replace <code>fmt.Println(string(b))</code> with the following to get nicely formatted JSON:
 	</p>
+	<br>
 	<pre>
 	<code class="language-go">
 var out bytes.Buffer
@@ -62,7 +70,9 @@ json.Indent(&out, b, "", "\t")
 out.WriteTo(os.Stdout)
 	</code>
 </pre>
+	<br>
 	<p>This returns:</p>
+	<br>
 	<pre>
 	<code class="language-json">
 [
@@ -81,10 +91,12 @@ out.WriteTo(os.Stdout)
 ]
 	</code>
 </pre>
+	<br>
 	<p>
 		For a slightly more complex example, let's add the wins and losses for each team during the 2023-2024 season.
 		We will nest the scores in the existing JSON structure like so:
 	</p>
+	<br>
 	<pre>
 	<code class="language-json">
 [
@@ -115,9 +127,11 @@ type (
 )
 	</code>
 </pre>
+	<br>
 	<p>
 		Which we can then use in our Go program:
 	</p>
+	<br>
 	<pre>
 	<code class="language-go">
 func main() {
@@ -139,7 +153,9 @@ func main() {
 }
 	</code>
 </pre>
+	<br>
 	<p>Which produces:</p>
+	<br>
 	<pre>
 	<code class="language-json">
 {
@@ -152,10 +168,12 @@ func main() {
 }
 	</code>
 </pre>
+	<br>
 	<p>
 		Go also allows for an HTML-escaped version of JSON output, making it safe to embed inside script tags.
 		The following example from the Go documentation demonstrates this:
 	</p>
+	<br>
 	<pre>
 	<code class="language-go">
 package main
@@ -173,12 +191,15 @@ func main() {
 }
 	</code>
 </pre>
+	<br>
 	<p>Which returns:</p>
+	<br>
 	<pre>
 	<code class="language-json">
 {"Name":"\u003cb\u003eHTML content\u003c/b\u003e"}
 	</code>
 </pre>
+	<br>
 	<p>
 		Understanding JSON in Go is essential for working with APIs and structured data. The language’s encoding/json package makes
 		it simple to serialize and deserialize JSON efficiently. Happy coding!

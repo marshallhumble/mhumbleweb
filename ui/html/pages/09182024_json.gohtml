@@ -1,95 +1,90 @@
 {{define "main"}}
 
-<h1>Google's Safe Open for Go</h1>
-
-    <br>
+    <h1>Google's SafeOpen for Go</h1>
     <br>
     <p>
-        The Google <a href="https://pkg.go.dev/github.com/google/safeopen">Safeopen Package</a> provides an extra level
-        of safety when taking in uploads from the web.
+        The Google <a href="https://pkg.go.dev/github.com/google/safeopen">SafeOpen package</a> provides an extra level
+        of security when handling file uploads from the web.</p>
         <br>
-        If the go proposal for <a href="https://github.com/golang/go/issues/67002#issuecomment-2243459398">Safer open
-            file functions</a> gets accepted then the safeopen package will be a duplicate, but that hasn't been
-        accepted yet.
+    <p>If the Go proposal for <a href="https://github.com/golang/go/issues/67002#issuecomment-2243459398">safer open
+            file functions</a> is accepted, then the SafeOpen package may become redundant. However, as of now, it is a
+        useful tool for enhancing file security.</p>
         <br>
-        Safeopen replaces the os.* part of file creation/open and only allows for a file to be created or opened in
-        a specific directory. This alleviates <a href="https://owasp.org/www-community/attacks/Path_Traversal">
-            directory/path transversal attacks</a> since the program can only access the specific folder and not
-        <i>../../../../etc/password</i> for example.
+    <p>SafeOpen replaces the <code>os.*</code> functions for file creation and opening, ensuring that files can only be
+        created or opened in a designated directory. This prevents <a href="https://owasp.org/www-community/attacks/Path_Traversal">
+            directory/path traversal attacks</a>, restricting access to unauthorized locations like
+        <code>../../../../etc/passwd</code>.</p>
         <br>
-        Here are 2 examples, both using standard go library for net/http, and only focusing on the file upload portion
-        in the server function.
+    <p>Below are two examples demonstrating SafeOpen usage in Go’s standard <code>net/http</code> library, focusing
+        only on the file upload portion of the server function.
     </p>
-    <br>
-    <br>
+    <br><br>
     <h2>Single File Example</h2>
     <br>
     <pre>
         <code class="language-go line-numbers">
-        //Get the file from the form
+        // Retrieve the file from the form
         file, fHeader, err := r.FormFile("uploadFile")
-	        if err != nil {
-		    app.logger.Error("Handler Error: ", err.Error(), "error")
-		    //Do something since there is an error:
+        if err != nil {
+            app.logger.Error("Handler Error: ", err.Error(), "error")
+            // Handle the error appropriately
             app.render(w, r, http.StatusUnsupportedMediaType, "home.html", data)
-	        }
-        //Can't forget to close files
-        defer file.Close()
+        }
+        defer file.Close() // Ensure the file is closed
 
-        //Check against null upload
+        // Check for a valid upload
         if fHeader.Size > 0 {
-            //Here we use safeopen.CreateAt just like we would os.Create()
-		    f, _ := safeopen.CreateAt("./uploads/", fHeader.Filename)
-		    defer f.Close()
+            // Use SafeOpen's CreateAt instead of os.Create
+            f, err := safeopen.CreateAt("./uploads/", fHeader.Filename)
+            if err != nil {
+                return
+            }
+            defer f.Close()
 
-            //Then hand off to io like we would to actual data to filesystem
-            //if you skip this you will just end up with a zero byte file
-		    _, err := io.Copy(f, file)
-		    if err != nil {
-			return
-		    }
-	    }
+            // Copy file contents to the destination
+            _, err = io.Copy(f, file)
+            if err != nil {
+                return
+            }
+        }
         </code>
     </pre>
     <br>
-    For the full example see My use of it <a href="https://github.com/marshallhumble/WebFileShare/blob/main/cmd/
-    web/handlersFiles.go">here on Github for WebFileServer</a>
+    <p>For the full example, see my implementation on <a href="https://github.com/marshallhumble/WebFileShare/blob/main/cmd/web/handlersFiles.go">GitHub</a> in WebFileShare.</p>
     <br>
-    <h2>Multi File Example</h2>
+    <h2>Multi-File Example</h2>
     <br>
     <pre>
     <code class="language-go">
     multipartFormData := r.MultipartForm
 
-	//
     for key, file := range multipartFormData.File["uploadFile"] {
 
-	//I want to limit uploads to 5
-    if key < 5 {
+        // Limit uploads to 5 files
+        if key < 5 {
 
-		//I also want to rename the files that get uploaded so grabbing some items here to do that
-        ext := filepath.Ext(file.Filename)
-        nTime := fileDate(time.Now()) //Nicely format a date
-        id := app.sessionManager.GetInt(r.Context(), "authenticatedUserID")
+            // Rename the uploaded file
+            ext := filepath.Ext(file.Filename)
+            nTime := fileDate(time.Now()) // Format timestamp
+            id := app.sessionManager.GetInt(r.Context(), "authenticatedUserID")
 
-		//Add all the above, chop of the ext, convert any spaces and add custom name and ext
-        file.Filename = strings.ReplaceAll(strconv.Itoa(id)+strings.ToLower(strings.TrimSuffix(file.Filename,
-        filepath.Ext(file.Filename))), " ", "-") + "-" + fmt.Sprintf("%v", nTime) + ext
+            // Generate a sanitized filename
+            file.Filename = strings.ReplaceAll(strconv.Itoa(id)+strings.ToLower(strings.TrimSuffix(file.Filename,
+                filepath.Ext(file.Filename))), " ", "-") + "-" + fmt.Sprintf("%v", nTime) + ext
 
-		//And here again use safe open just the same way
-        dst, err := safeopen.CreateAt("./ui/static/pics", file.Filename)
+            // Use SafeOpen to securely create the file
+            dst, err := safeopen.CreateAt("./ui/static/pics", file.Filename)
+            if err != nil {
+                app.clientError(w, http.StatusBadRequest)
+                return
+            }
 
-        if err != nil {
-            app.clientError(w, http.StatusBadRequest)
-            return
-		}
+            // Copy the file contents
+            f, _ := file.Open()
+            io.Copy(dst, f)
 
-		//and again just copy like normal
-        f, _ := file.Open()
-        io.Copy(dst, f)
-
-	    //I wanted to add distinct items into different fields in DB for my use case
-        switch key {
+            // Store file names into separate fields in the database
+            switch key {
             case 0:
                 form.Item1 = file.Filename
             case 1:
@@ -108,5 +103,4 @@
     </code>
     </pre>
     <br>
-
 {{end}}
