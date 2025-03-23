@@ -2,18 +2,18 @@
 
 <h1>Securing Software Development: Shifting Left? Or Just start earlier?</h1>
 
-
+<br>
 <p>Traditional security practices often come too late in the Software Development Life Cycle (SDLC), leading to
 vulnerabilities that are costly and time-consuming to fix. Shifting security left means integrating security
     practices early in the development process, reducing risk and minimizing technical debt.</p>
-
+<br>
 <p>The <a href="https://www.researchgate.net/figure/BM-System-Science-Institute-Relative-Cost-of-Fixing-Defects_fig1_255965523">
         Systems Science Institute</a> at IBM and <a href="https://www.nist.gov/system/files/documents/director/planning/report02-3.pdf">
         National Institute of Standards and Technology (NIST)'s</a> reports agree that finding bugs earlier in development
 can lead to massive cost and time reduction. It can cost 6 times as much to fix a bug in during implementation
 than to fix one identified during design. The cost to fix bugs found during the testing phase can be 15x more than
 those found during design.</p>
-
+<br>
 <h2>Why Security Should Start Early</h2>
 <br>
 <ul>
@@ -75,7 +75,7 @@ those found during design.</p>
 <br>
 
 <h3>3. Automate Security in CI/CD Pipelines</h3>
-
+<br>
 <p>Here I want to review the OWASP Top 10 from 2021 (2025 report hopefully soon!) we see that many of these issues
     could have been prevented by using code review and analysis early/earlier in development. I will go over the top 5,
     and what testing could have prevented this, Here is also an acronym list in case you need it:</p>
@@ -87,7 +87,7 @@ those found during design.</p>
     <li>SCA - Software Composition Analysis</li>
     <li>SBOM - Software Bill of Materials</li>
 </ul>
-
+<br>
 <ol>
     <li>Broken Access Control - this could have been fixed using DAST or security unit tests</li>
     <li>Cryptographic failures - (could be multiple issues but) DAST/secure unit tests, dependency management</li>
