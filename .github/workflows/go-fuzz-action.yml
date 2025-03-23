@@ -1,2 +1,0 @@
-- name: Go fuzz test
-  uses: jidicula/go-fuzz-action@v1.2.0
