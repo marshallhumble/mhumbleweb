@@ -1,10 +1,19 @@
-ARG GO_VERSION=1.24.1
+ARG GO_VERSION=1.24.2
 
 # First stage: build the executable.
 FROM golang:${GO_VERSION}-alpine AS build
+RUN apk update && apk upgrade --no-cache
+
+#Create non-root user
+RUN addgroup wwwgroup
+RUN adduser --disabled-password -u 10001 -G wwwgroup wwwuser
+
 RUN apk add --no-cache tzdata
+
 ENV CGO_ENABLED=0
+
 WORKDIR /src
+
 COPY . .
 RUN go mod download
 RUN go build -ldflags "-s -w" -o web ./cmd/web
@@ -14,13 +23,18 @@ FROM scratch
 COPY --from=build /usr/share/zoneinfo /usr/share/zoneinfo
 ENV TZ=America/Chicago
 
-WORKDIR /app
+# Create and set nonroot user
+COPY --from=build /etc/passwd /etc/passwd
+USER wwwuser
+
+#set workdir
+WORKDIR /var/www/html
 
 COPY --from=build /src/web .
-COPY --from=build /src/tls/cert.pem /app/tls/cert.pem
-COPY --from=build /src/tls/key.pem /app/tls/key.pem
-COPY --from=build /src/internal/models/json/data.json /app/internal/models/json/data.json
+COPY --from=build /src/tls/cert.pem /var/www/html/tls/cert.pem
+COPY --from=build /src/tls/key.pem /var/www/html/tls/key.pem
+COPY --from=build /src/internal/models/json/data.json /var/www/html/internal/models/json/data.json
 
 EXPOSE 443
-ENTRYPOINT ["/app/web"]
+ENTRYPOINT ["/var/www/html/web"]
 
