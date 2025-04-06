@@ -12,7 +12,7 @@ primary_region = 'dfw'
   strategy = "rolling"
 
 [[services]]
-  internal_port = 443
+  internal_port = 4443
   protocol = "tcp"
 [[services.ports]]
   port = "443"
