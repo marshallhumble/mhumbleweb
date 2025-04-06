@@ -35,6 +35,6 @@ COPY --from=build /src/tls/cert.pem /var/www/html/tls/cert.pem
 COPY --from=build /src/tls/key.pem /var/www/html/tls/key.pem
 COPY --from=build /src/internal/models/json/data.json /var/www/html/internal/models/json/data.json
 
-EXPOSE 443
+EXPOSE 4443
 ENTRYPOINT ["/var/www/html/web"]
 
