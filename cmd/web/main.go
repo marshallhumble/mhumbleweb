@@ -25,7 +25,7 @@ func main() {
 		AddSource: true,
 	}))
 
-	addr := flag.String("addr", ":443", "HTTP network address")
+	addr := flag.String("addr", ":4443", "HTTP network address")
 
 	flag.Parse()
 
@@ -69,6 +69,9 @@ func main() {
 	logger.Info("starting server", "addr", srv.Addr)
 	err = srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
 
-	logger.Error(err.Error())
+	if err != nil {
+		logger.Error(err.Error())
+	}
+
 	os.Exit(1)
 }
