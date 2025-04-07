@@ -25,6 +25,7 @@ ENV TZ=America/Chicago
 
 # Create and set nonroot user
 COPY --from=build /etc/passwd /etc/passwd
+
 USER wwwuser
 
 #set workdir
