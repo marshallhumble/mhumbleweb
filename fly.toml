@@ -15,7 +15,6 @@ primary_region = 'dfw'
   internal_port = 4443
   protocol = "tcp"
 [[services.ports]]
-  handlers = ["tls"]
   port = "443"
 
 
