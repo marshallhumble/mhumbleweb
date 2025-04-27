@@ -8,7 +8,7 @@ RUN apk add wolfictl
 RUN wolfictl install go@1.24.2 tzdata binutils curl || apk add --no-cache go tzdata binutils curl
 
 # Install cloudflared
-RUN curl -L https://github.com/cloudflare/ /releases/latest/download/cloudflared-linux-amd64 \
+RUN curl -L https://github.com/cloudflare/releases/latest/download/cloudflared-linux-amd64 \
     -o /usr/local/bin/cloudflared && chmod +x /usr/local/bin/cloudflared
 
 ENV CGO_ENABLED=0
