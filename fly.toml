@@ -7,16 +7,24 @@ app = 'mhumble-io'
 primary_region = 'dfw'
 
 [build]
+image = "ghcr.io/marshallhumble/mhumbleweb:latest"  # Replace if using a versioned tag
 
 [deploy]
   strategy = "rolling"
 
-[[services]]
-  internal_port = 443
-  protocol = "tcp"
-[[services.ports]]
-  port = "443"
+[env]
+  TUNNEL_TOKEN = ""  # This is injected from Fly secrets
 
+[http_service]
+  internal_port = 443
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+
+[[services.ports]]
+  handlers = ["tls"]
+  port = 443
 
 [[vm]]
   memory = '256mb'

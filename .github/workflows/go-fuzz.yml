@@ -1,0 +1,34 @@
+name: Go Fuzzing and Security Checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '0 2 * * *'
+
+jobs:
+  fuzz:
+    runs-on: ubuntu-latest
+    name: Run Go fuzzing and static checks
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Run Go fuzz tests
+        run: go test -fuzz=Fuzz -fuzztime=30s ./...
+
+      - name: Install gosec (Go security linter)
+        run: go install github.com/securego/gosec/v2/cmd/gosec@latest
+
+      - name: Run gosec on codebase
+        run: $(go env GOPATH)/bin/gosec ./...
