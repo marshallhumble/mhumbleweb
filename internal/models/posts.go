@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"log"
 	"os"
+	"sort"
 	"time"
 )
 
@@ -39,7 +40,9 @@ func (pm PostsModel) GetAll() ([]Post, error) {
 		log.Fatalf("Error marshaling json %s", err)
 	}
 
-	return posts, nil
+	//Sort by time
+	return sortByTime(posts)
+
 }
 
 func (pm PostsModel) GetById(id int) (Post, error) {
@@ -58,4 +61,12 @@ func (pm PostsModel) GetById(id int) (Post, error) {
 	fmt.Println()
 
 	return posts[id-1], nil
+}
+
+func sortByTime(posts []Post) ([]Post, error) {
+	sort.Slice(posts, func(i, j int) bool {
+		return posts[i].Created.After(posts[j].Created)
+	})
+
+	return posts, nil
 }
