@@ -1,3 +1,12 @@
+cloudflared/cert.pem
+tls/cert.pem
+tls/key.pem
+cert.yaml
+cert.pem.b64
+age.key
+sbom.json
+.env
+
 tls/
 src/
 tailwind.condig.js### JetBrains template
