@@ -1,34 +1,44 @@
-ARG GO_VERSION=1.24.2
+# --------------------------------------------------
+# Stage 1: Build Go binary securely with Wolfi base
+# --------------------------------------------------
+FROM cgr.dev/chainguard/wolfi-base AS build
 
-# First stage: build the executable.
-FROM golang:${GO_VERSION}-alpine AS build
-RUN apk update && apk upgrade --no-cache
+RUN apk add wolfictl
 
+RUN wolfictl install go@1.24.2 tzdata binutils curl || apk add --no-cache go tzdata binutils curl
 
-RUN apk add --no-cache tzdata
+# Install cloudflared
+RUN curl -L https://github.com/cloudflare/releases/latest/download/cloudflared-linux-amd64 \
+    -o /usr/local/bin/cloudflared && chmod +x /usr/local/bin/cloudflared
 
 ENV CGO_ENABLED=0
-
 WORKDIR /src
 
 COPY . .
+
 RUN go mod download
-RUN go build -ldflags "-s -w" -o web ./cmd/web
+RUN go build -ldflags "-s -w" -o web ./cmd/web && strip web
 
-FROM scratch
+# --------------------------------------------------
+# Stage 2: Runtime — secure and small (wolfi-base)
+# --------------------------------------------------
+FROM cgr.dev/chainguard/wolfi-base AS runtime
 
-COPY --from=build /usr/share/zoneinfo /usr/share/zoneinfo
-ENV TZ=America/Chicago
-
-
-#set workdir
 WORKDIR /var/www/html
 
-COPY --from=build /src/web /var/www/html/web
-COPY --from=build /src/tls/cert.pem /var/www/html/tls/cert.pem
-COPY --from=build /src/tls/key.pem /var/www/html/tls/key.pem
-COPY --from=build /src/internal/models/json/data.json /var/www/html/internal/models/json/data.json
+# Copy runtime binaries and assets
+COPY --from=build /usr/local/bin/cloudflared /usr/local/bin/cloudflared
+COPY --from=build /src/web ./web
+COPY --from=build /src/tls/cert.pem ./tls/cert.pem
+COPY --from=build /src/tls/key.pem ./tls/key.pem
+COPY --from=build /src/internal/models/json/data.json ./internal/models/json/data.json
+COPY ./cloudflared/config.yaml /etc/cloudflared/config.yml
+COPY ./entrypoint.sh /entrypoint.sh
+
+RUN chmod +x /entrypoint.sh
+
+# Expect credentials-token to be passed in as an env var
+ENV TUNNEL_TOKEN=""
 
 EXPOSE 443
-ENTRYPOINT ["/var/www/html/web"]
-
+ENTRYPOINT ["/entrypoint.sh"]
