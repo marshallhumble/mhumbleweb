@@ -1,4 +1,4 @@
-tunnel: my-personal-site-tunnel
+tunnel: ab031181-277c-435a-9f0e-2cd1853fe462
 credentials-token: ${TUNNEL_TOKEN}
 
 ingress:
