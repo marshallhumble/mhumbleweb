@@ -23,7 +23,7 @@ jobs:
           password: ${{ secrets.GHCR_PAR }}
 
       - name: Pull image
-        run: docker pull ghcr.io/${{ github.actor }}/${{ github.ref_name }}:latest
+        run: docker pull ghcr.io/${{ github.actor }}/${{ env.REPO_NAME }}:latest
 
       - name: Set up Flyctl
         uses: superfly/flyctl-actions/setup-flyctl@v1
