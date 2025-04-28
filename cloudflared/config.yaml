@@ -1,5 +1,5 @@
 tunnel: ab031181-277c-435a-9f0e-2cd1853fe462
-credentials-token: ${TUNNEL_TOKEN}
+credentials-token: ./ab031181-277c-435a-9f0e-2cd1853fe462.json
 
 ingress:
   - hostname: mhumble.io

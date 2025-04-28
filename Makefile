@@ -70,7 +70,11 @@ scan-cves:
 verify:
 	COSIGN_EXPERIMENTAL=1 cosign verify $(FULL_IMAGE)
 
-full-pipeline: setup-tools login-ghcr build sign attach-sbom attest verify scan-cves
+fly-deploy:
+	fly deploy --local-only --image ghcr.io/marshallhumble/mhumbleweb:latest
+
+
+full-pipeline: setup-tools login-ghcr build sign attach-sbom attest verify scan-cves fly-deploy
 
 clean:
 	rm -f sbom.json sbom.html
