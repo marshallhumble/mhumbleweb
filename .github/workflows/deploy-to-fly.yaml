@@ -15,11 +15,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Log in to GHCR
+        uses: docker/login-action@3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_PAR }}
+
+      - name: Pull image
+        run: docker pull ghcr.io/${{github.repository }}:${{ github.ref_name }}
+
       - name: Set up Flyctl
         uses: superfly/flyctl-actions/setup-flyctl@v1
 
       - name: Deploy to Fly
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
         run: |
-          flyctl deploy --remote-only --image ghcr.io/${{ github.repository_owner }}/mhumbleweb:latest
+          flyctl deploy --remote-only --image ghcr.io/${{ github.repository_owner }}/${{ github.ref_name }}:latest
