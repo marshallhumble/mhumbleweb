@@ -16,12 +16,16 @@ FULL_IMAGE=$(IMAGE_NAME):$(IMAGE_TAG)
 # -------------------------
 
 setup-tools:
-	@echo "Installing tools: cosign, syft, grype, wolfictl..."
+	@echo "Installing tools: cosign, syft, grype, wolfictl, buildx..."
 	command -v cosign >/dev/null || brew install sigstore/tap/cosign
 	command -v syft >/dev/null || brew install syft
 	command -v grype >/dev/null || brew install grype
-	#command -v curl -sSfL https://github.com/wolfi-dev/wolfictl/releases/$(WOLFI_VERSION)/download/wolfictl-linux-amd64 -o $(WOLFI_BIN) && chmod +x $(WOLFI_BIN)
-
+	command -v docker-buildx >/dev/null || docker buildx create --use
+	command -v wolfictl >/dev/null || ( \
+	  git clone https://github.com/wolfi-dev/wolfictl.git /tmp/wolfictl && \
+	  cd /tmp/wolfictl && go install && \
+	  echo "wolfictl installed to \`go env GOPATH\`/bin" \
+	)
 
 login-ghcr:
 	@if [ -z "$(GHCR_TOKEN)" ]; then \
@@ -38,7 +42,7 @@ update-base-check:
 	bash scripts/update-wolfi-base.sh Dockerfile || echo "No update available."
 
 build:
-	docker build -t $(FULL_IMAGE) .
+	docker buildx build --platform linux/amd64 --tag $(FULL_IMAGE) --load .
 	docker tag $(FULL_IMAGE) $(IMAGE_NAME):latest
 	docker push $(FULL_IMAGE)
 	docker push $(IMAGE_NAME):latest
@@ -64,9 +68,9 @@ scan-cves:
 	grype $(FULL_IMAGE) || true
 
 verify:
-	COSIGN_EXPERIMENTAL=1 cosign verify --certificate-identity --keyless $(FULL_IMAGE)
+	COSIGN_EXPERIMENTAL=1 cosign verify $(FULL_IMAGE)
 
 full-pipeline: setup-tools login-ghcr build sign attach-sbom attest verify scan-cves
 
 clean:
-	rm -f sbom.json
+	rm -f sbom.json sbom.html
