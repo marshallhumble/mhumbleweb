@@ -1,0 +1,196 @@
+{{define "main"}}
+    <h1>Building a FIPS-Compliant Python Container</h1>
+    <br>
+        <img alt="" src="/static/images/docker_fips_header.png">
+    <br>
+    <h2>Introduction</h2>
+    <br>
+    <p>If you're developing Python apps in a regulated environment (for example, Centers for Medicare & Medicaid
+        ervices [CMS], FedRAMP, DoD, financial, or anything else that says "FIPS 140-2/3") you've probably had this issue:</p>
+    <br>
+    <p><strong>How do I get Python, OpenSSL, and cryptography to play nice in Docker with FIPS mode enabled?</strong></p>
+    <br>
+    <p>This post breaks down what I ran into, how I solved it, and how I built a hardened, minimal, and fully
+        FIPS-compliant Python container image.</p>
+    <br>
+    <h2>Why You Should Care</h2>
+    <br>
+    <p>Before we dive too deep into crypto builds and linker errors, it's worth noting that FIPS 140-2 is just one
+        piece of a broader puzzle. It ensures that cryptographic modules meet the US (and Canadian) government
+        standards when transmitting or storing data.</p>
+    <br>
+    <p>So if you are looking to meet any of those standards, or subcontract or provide services to a company
+        that does, you will eventually need to ensure FIPS compliance in your organization. FedRAMP requires that
+        ll cryptography used in the cloud environment must be FIPS validated.</p>
+    <br>
+    <h2>FIPS-Compliant vs FIPS-Validated</h2>
+    <br>
+    <p>A quick but important distinction:</p>
+    <br>
+    <p><strong>FIPS-Compliant</strong> means your software is using cryptographic modules (like OpenSSL) that are
+        configured in accordance with the FIPS 140-2/3 standard.</p>
+    <br>
+    <p><strong>FIPS-Validated</strong> means that the exact cryptographic module and configuration you are using
+        has been independently tested and certified by a NIST-accredited lab — and appears on the NIST CMVP
+        validation list.</p>
+    <br>
+    <p>This container is FIPS-compliant: it uses the FIPS validated OpenSSL (v3.1.2 FIPS-140-3) and was built
+        ith FIPS mode enabled. It also uses Python compiled with FIPS mode and includes a cryptography module
+        built from source against it. However, to be FIPS-validated, you'd need to use a module that has gone
+        through formal validation and review of implementation under a formal process (e.g., Red Hat's FIPS
+        OpenSSL or Chainguard's validated containers).</p>
+    <br>
+    <p>For most development and staging environments, FIPS-compliant is enough. But for production environments
+        under FedRAMP, DoD IL5, or similar, validated modules most likely will be required.</p>
+    <br>
+    <p>You may already be using a FIPS validated module in some part of your environment:</p>
+    <br>
+    <ul>
+        <li>AWS provides FIPS-enabled endpoints for many of its services, backed by specific modules (e.g. Certificate 4631)</li>
+        <li>Google uses BoringCrypto — a FIPS-validated fork of BoringSSL — across many internal and cloud services</li>
+    </ul>
+    <br>
+    <h2>The Container Build</h2>
+    <br>
+    <p>This all started when I came across FiligranHQ/docker-python-nodejs-fips — a FIPS-compliant image that hadn't
+        been updated in over a year and had 55 known CVEs.</p>
+    <br>
+    <p>I figured: if we're going to do FIPS, let's actually do it — no half-measures. And if I can't update and
+        validate what's out there, I'll build something I can trust. Also, I don't want to write POA&M entries
+        for all those items.</p>
+    <br>
+    <p>I used to roll my own Linux distros from scratch back in the day — minimal kernels, custom init (BSD style
+        for those curious) scripts, the works. This project brought back some of that joy: chasing down errors,
+        really understanding what dependencies go into a package; learning how musl differs from glibc, learning
+        about Rust's cargo and how Python cryptography packages link against OpenSSL, and tuning the build flow
+        until it all clicked.</p>
+    <br>
+    <p>So while this was built for compliance, it also scratched a serious hacker itch. And it's a good reminder:
+        the more you understand what's underneath the abstraction, the more confidently you can lock it down.</p>
+    <br>
+    <h2>What Was Needed</h2>
+    <br>
+    <ul>
+        <li>OpenSSL built with FIPS support</li>
+        <li>cryptography built against that FIPS OpenSSL</li>
+        <li>Python to actually use those libs at runtime</li>
+        <li>A container that won't silently swap in insecure defaults</li>
+        <li>Oh, and you'll probably want an SBOM and vulnerability scan too, especially if you are looking
+            at compliance with Gov/FedRAMP/CMS/etc.</li>
+    </ul>
+    <br>
+    <h2>What I Built</h2>
+    <br>
+    <p>A three-stage Dockerfile:</p>
+    <br>
+    <h3>Stage 1: fipscore</h3>
+    <br>
+    <ul>
+        <li>Compiles OpenSSL 3.1.2 with enable-fips</li>
+        <li>Installs it to /usr/local</li>
+        <li>Copies over fipsmodule.cnf and openssl.cnf configs</li>
+    </ul>
+    <br>
+    <h3>Stage 2: pythoncrypto</h3>
+    <br>
+    <ul>
+        <li>Builds Python from source with --with-openssl=/usr/local & no docs</li>
+        <li>Installs pip manually</li>
+        <li>Builds cryptography from source (with --no-binary)</li>
+        <li>Uses rustup before FIPS mode is enabled (needed to build cryptography module)</li>
+        <li>Binaries stripped, .a/.la/__pycache__/tests deleted</li>
+    </ul>
+    <br>
+    <h3>Stage 3: Minimal Runtime</h3>
+    <br>
+    <ul>
+        <li>Alpine base</li>
+        <li>Only the necessary binaries and libs copied in</li>
+        <li>FIPS runtime env vars defined</li>
+    </ul>
+    <br>
+    <h2>Security Additions</h2>
+    <br>
+    <ul>
+        <li>FIPS mode enforced via environment variables</li>
+        <li>Python crypto self-test (fipsCheck.py) baked in</li>
+        <li>OpenSSL list -providers confirms FIPS module is active</li>
+        <li>SBOM generated via trivy image --format spdx-json</li>
+        <li>CVE scan via trivy image --severity CRITICAL,HIGH,MEDIUM (you will need low for GovRAMP & FedRAMP)</li>
+    </ul>
+    <br>
+    <h2>Final Image Results</h2>
+    <br>
+    <ul>
+        <li><strong>Size:</strong> ~358MB</li>
+        <li><strong>FIPS 140-2 compliant crypto stack</strong></li>
+        <li><strong>Validated with OpenSSL, cryptography, and a test hash</strong></li>
+        <li><strong>SBOM + scan artifacts available for pipeline use</strong></li>
+    </ul>
+    <br>
+    <p>And the build is just:</p>
+    <br>
+    <pre><code>just build-all</code></pre>
+    <br>
+    <h2>Dev Tools Included</h2>
+    <br>
+    <p>It ships with:</p>
+    <br>
+    <ul>
+        <li>A Makefile and a justfile for developer + CI use</li>
+        <li>build, run, shell, clean, trivy-scan, and trivy-sbom targets</li>
+        <li>build-all for CI pipelines</li>
+    </ul>
+    <br>
+    <h2>Want to Try It?</h2>
+    <br>
+    <p>Clone the repo (or use your own source):</p>
+    <br>
+    <pre><code>git clone https://github.com/marshallhumble/fipsDocker
+cd fipsDocker
+just build-all</code></pre>
+    <br>
+    <p>Then run your FIPS-hardened Python app:</p>
+    <br>
+    <pre><code>docker run --rm fips-python</code></pre>
+    <br>
+    <h2>A Quick Reality Check</h2>
+    <br>
+    <p>Was it annoying? A little.</p>
+    <br>
+    <p>Getting OpenSSL, Python, Rust-based cryptography, and FIPS mode to all cooperate in Docker took some
+        trial and error. TLS errors. Module self-test failures. Mysterious libcurl segfaults. You name it.</p>
+    <br>
+    <p>But I got through it — and now I have a reproducible, hardened pipeline and a compliant image that I
+        actually trust.</p>
+    <br>
+    <p>That said, if you want "easy mode" for FIPS containers — especially for Go, Python, or Node — Chainguard's
+        FIPS builds are a fantastic option: pre-hardened, verified, minimal, and built for supply chain security.
+        Highly recommended if you want to skip the source builds.</p>
+    <br>
+    <h2>The Code</h2>
+    <br>
+    <p>All of this is available in the GitHub repo, including:</p>
+    <br>
+    <ul>
+        <li>Dockerfile</li>
+        <li>fipsCheck.py</li>
+        <li>Makefile & Justfile</li>
+        <li>SBOM output example</li>
+    </ul>
+    <br>
+    <h2>Final Thoughts</h2>
+    <br>
+    <p>If you're building Python workloads for secure environments:</p>
+    <br>
+    <p><span class="do"> Do:</span></p>
+    <br>
+    <ul>
+        <li>Update the base image(s) to ensure no CVEs</li>
+        <li>Verify with trivy, grype, etc. to ensure no CVEs</li>
+        <li>Do the work to prove you're FIPS compliant & test it</li>
+        <li>Understand your stack</li>
+    </ul>
+    <br>
+    <p>Happy hardening.</p>
+{{end}}
