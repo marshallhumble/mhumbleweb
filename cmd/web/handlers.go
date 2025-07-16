@@ -7,18 +7,19 @@ import (
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData(r)
+	data.Title = "Marshall Humble - Software Engineer & Technology Leader"
 	app.render(w, r, http.StatusOK, "home.gohtml", data)
-	return
 }
 
 func (app *application) about(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData(r)
+	data.Title = "About - Marshall Humble"
 	app.render(w, r, http.StatusOK, "about.gohtml", data)
-	return
 }
 
 func (app *application) articles(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData(r)
+	data.Title = "Articles - Marshall Humble"
 
 	Posts, err := app.posts.GetAll()
 	if err != nil {
@@ -29,7 +30,6 @@ func (app *application) articles(w http.ResponseWriter, r *http.Request) {
 	data.Posts = Posts
 
 	app.render(w, r, http.StatusOK, "articles.gohtml", data)
-	return
 }
 
 func (app *application) getArticle(w http.ResponseWriter, r *http.Request) {
@@ -49,6 +49,7 @@ func (app *application) getArticle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data.Post = post
-	app.render(w, r, http.StatusOK, string(post.Content), data)
+	data.Title = post.Title + " - Marshall Humble"
 
+	app.render(w, r, http.StatusOK, string(post.Content), data)
 }
