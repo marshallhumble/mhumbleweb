@@ -101,22 +101,6 @@ jobs:
           name: sbom
           path: sbom.spdx.json
 
-  # SLSA Provenance as separate job
-  provenance:
-    needs: [build-and-security]
-    permissions:
-      actions: read
-      id-token: write
-      contents: write
-      packages: write  # Add this permission
-    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@v1.10.0
-    with:
-      image: ${{ needs.build-and-security.outputs.image }}
-      digest: ${{ needs.build-and-security.outputs.digest }}
-      registry-username: ${{ github.actor }}
-    secrets:
-      registry-password: ${{ secrets.GITHUB_TOKEN }}
-
   deploy:
     needs: [build-and-security]
     runs-on: ubuntu-latest
