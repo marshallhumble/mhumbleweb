@@ -5,7 +5,7 @@ on:
     branches: [main, master]
   pull_request:
     branches: [main, master]
-  workflow_dispatch: # Allow manual triggering
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
@@ -17,9 +17,8 @@ jobs:
     permissions:
       contents: read
       packages: write
-      id-token: write # For cosign signing
-      security-events: write # For uploading SARIF results
-      attestations: write # For SLSA attestations
+      id-token: write
+      attestations: write
 
     outputs:
       image: ${{ steps.image.outputs.image }}
@@ -87,15 +86,6 @@ jobs:
         run: |
           cosign attach sbom --sbom sbom.spdx.json ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
 
-      - name: Generate SLSA Provenance
-        uses: slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@v1.10.0
-        with:
-          image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          digest: ${{ steps.build.outputs.digest }}
-          registry-username: ${{ github.actor }}
-        secrets:
-          registry-password: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Verify image signature
         run: |
           cosign verify ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }} \
@@ -106,15 +96,8 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-
-      # Change the file name:
-      - name: Upload CVE scan results to GitHub Security
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        with:
-          sarif_file: trivy-results.sarif
+          format: 'json'
+          output: 'trivy-results.json'
 
       - name: Upload SBOM as artifact
         uses: actions/upload-artifact@v4
@@ -122,8 +105,23 @@ jobs:
           name: sbom
           path: sbom.spdx.json
 
+  # SLSA Provenance as separate job
+  provenance:
+    needs: [build-and-security]
+    permissions:
+      actions: read
+      id-token: write
+      contents: write
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@v1.10.0
+    with:
+      image: ${{ needs.build-and-security.outputs.image }}
+      digest: ${{ needs.build-and-security.outputs.digest }}
+      registry-username: ${{ github.actor }}
+    secrets:
+      registry-password: ${{ secrets.GITHUB_TOKEN }}
+
   deploy:
-    needs: build-and-security
+    needs: [build-and-security]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
@@ -139,26 +137,3 @@ jobs:
           flyctl deploy --local-only --image ${{ needs.build-and-security.outputs.image }}
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-
-  security-summary:
-    needs: build-and-security
-    runs-on: ubuntu-latest
-    if: always()
-
-    steps:
-      - name: Download SBOM
-        uses: actions/download-artifact@v4
-        with:
-          name: sbom
-
-      - name: Security Summary
-        run: |
-          echo "## 🔒 Security Pipeline Summary" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Image built and pushed" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Image signed with Cosign" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ SBOM generated and attached" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ SLSA provenance attestation created" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ CVE scan completed" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Signature verified" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Image:** \`${{ needs.build-and-security.outputs.image }}\`" >> $GITHUB_STEP_SUMMARY
