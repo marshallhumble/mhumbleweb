@@ -2,10 +2,8 @@ name: Build, Security Scan, and Deploy
 
 on:
   push:
-    branches: [main, master]
-  pull_request:
-    branches: [main, master]
-  workflow_dispatch:
+    branches: [main, master]  # Only build/push on main branch
+  workflow_dispatch: # Allow manual triggering
 
 env:
   REGISTRY: ghcr.io
@@ -44,10 +42,8 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=ref,event=branch
-            type=ref,event=pr
             type=raw,value={{date 'YYYYMMDD'}}-{{sha}}
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=latest
 
       - name: Set image output
         id: image
@@ -112,6 +108,7 @@ jobs:
       actions: read
       id-token: write
       contents: write
+      packages: write  # Add this permission
     uses: slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@v1.10.0
     with:
       image: ${{ needs.build-and-security.outputs.image }}
@@ -123,7 +120,6 @@ jobs:
   deploy:
     needs: [build-and-security]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     steps:
       - name: Checkout repository
