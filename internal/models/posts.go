@@ -60,6 +60,9 @@ func (pm PostsModel) GetById(id int) (Post, error) {
 
 	fmt.Println()
 
+	if id < 1 || id > len(posts) {
+		return posts[len(posts)-1], nil
+	}
 	return posts[id-1], nil
 }
 
