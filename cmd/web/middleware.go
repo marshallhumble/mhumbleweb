@@ -33,9 +33,6 @@ func securityHeaders(next http.Handler) http.Handler {
 		// Permissions Policy (formerly Feature-Policy)
 		w.Header().Set("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=()")
 
-		// Only disable caching for truly sensitive pages (you don't seem to have these)
-		// Removed aggressive no-cache headers that slow down browsers
-
 		next.ServeHTTP(w, r)
 	})
 }
@@ -109,25 +106,4 @@ func (app *application) recoverPanic(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r)
 	})
-}
-
-// Optional: Rate limiting middleware
-func (app *application) rateLimit(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Simple rate limiting by IP
-		// You might want to use a proper rate limiter like golang.org/x/time/rate
-
-		next.ServeHTTP(w, r)
-	})
-}
-
-// Optional: Request size limiting
-func limitRequestSize(maxBytes int64) func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Limit request body size
-			r.Body = http.MaxBytesReader(w, r.Body, maxBytes)
-			next.ServeHTTP(w, r)
-		})
-	}
 }
