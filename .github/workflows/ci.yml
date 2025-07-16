@@ -112,6 +112,7 @@ jobs:
       actions: read
       id-token: write
       contents: write
+      packages: write  # Add this permission
     uses: slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@v1.10.0
     with:
       image: ${{ needs.build-and-security.outputs.image }}
