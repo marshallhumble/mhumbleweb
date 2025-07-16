@@ -1,12 +1,15 @@
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"flag"
 	"html/template"
 	"log/slog"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"mhumbleweb/internal/models"
@@ -19,19 +22,20 @@ type application struct {
 }
 
 func main() {
-
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 		Level:     slog.LevelInfo,
 		AddSource: true,
 	}))
 
-	addr := flag.String("addr", ":443", "HTTP network address")
+	addr := flag.String("addr", ":443", "HTTPS network address")
+	certFile := flag.String("cert", "./tls/cert.pem", "Path to TLS certificate")
+	keyFile := flag.String("key", "./tls/key.pem", "Path to TLS private key")
 
 	flag.Parse()
 
 	templateCache, err := newTemplateCache()
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Error("failed to create template cache", "error", err)
 		os.Exit(1)
 	}
 
@@ -66,12 +70,34 @@ func main() {
 		WriteTimeout: 10 * time.Second,
 	}
 
-	logger.Info("starting server", "addr", srv.Addr)
-	err = srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
+	// Channel to listen for interrupt signal for graceful shutdown
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
-	if err != nil {
-		logger.Error(err.Error())
+	// Start server in a goroutine
+	go func() {
+		logger.Info("starting HTTPS server", "addr", srv.Addr)
+		err := srv.ListenAndServeTLS(*certFile, *keyFile)
+		if err != nil && err != http.ErrServerClosed {
+			logger.Error("server failed to start", "error", err)
+			os.Exit(1)
+		}
+	}()
+
+	logger.Info("server started successfully")
+
+	// Wait for interrupt signal to gracefully shut down the server
+	<-quit
+	logger.Info("shutting down server...")
+
+	// Give outstanding requests 30 seconds to complete
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		logger.Error("server forced to shutdown", "error", err)
+		os.Exit(1)
 	}
 
-	os.Exit(1)
+	logger.Info("server exited gracefully")
 }

@@ -1,20 +1,67 @@
-name: Run Gosec
+name: Security Scan (Gosec)
+
 on:
   push:
-    branches:
-      - master
+    branches: [main, master]  # Support both common branch names
   pull_request:
-    branches:
-      - master
+    branches: [main, master]
+  schedule:
+    - cron: '0 2 * * 1'  # Run weekly on Mondays at 2 AM
+  workflow_dispatch:  # Allow manual triggering
+
 jobs:
-  tests:
+  security-scan:
     runs-on: ubuntu-latest
-    env:
-      GO111MODULE: on
+    permissions:
+      contents: read
+      actions: read
+
     steps:
-      - name: Checkout Source
-        uses: actions/checkout@v3
-      - name: Run Gosec Security Scanner
-        uses: securego/gosec@master
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
         with:
-          args: ./...
+          go-version: '1.24'
+          cache: true
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Install Gosec
+        run: go install github.com/securego/gosec/v2/cmd/gosec@latest
+
+      - name: Run Gosec Security Scanner
+        run: gosec -fmt json -out gosec-results.json ./...
+
+      - name: Upload Gosec results as artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gosec-results
+          path: gosec-results.json
+
+      - name: Display security scan results
+        run: |
+          if [ -f gosec-results.json ]; then
+            # Count issues in JSON file
+            ISSUES=$(jq '.Issues | length' gosec-results.json 2>/dev/null || echo "0")
+            echo "Security issues found: $ISSUES"
+          
+            if [ "$ISSUES" -gt 0 ]; then
+              echo "⚠️ Security issues detected:"
+              echo "## 🔒 Security Scan Results" >> $GITHUB_STEP_SUMMARY
+              echo "- **Issues found:** $ISSUES" >> $GITHUB_STEP_SUMMARY
+              echo "- **Details:** Download the gosec-results artifact to view details" >> $GITHUB_STEP_SUMMARY
+              echo ""
+              echo "Issue details:"
+              jq -r '.Issues[] | "- \(.severity): \(.what) in \(.file):\(.line)"' gosec-results.json || echo "Could not parse issue details"
+            else
+              echo "✅ No security issues found"
+              echo "## 🔒 Security Scan Results" >> $GITHUB_STEP_SUMMARY
+              echo "- **Status:** ✅ No security issues detected" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "❌ Gosec results file not found"
+          fi

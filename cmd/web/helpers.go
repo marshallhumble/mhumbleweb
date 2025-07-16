@@ -17,21 +17,19 @@ func (app *application) serverError(w http.ResponseWriter, r *http.Request, err 
 
 	app.logger.Error(err.Error(), "method", method, "uri", uri, "trace", trace)
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-
-}
-
-func (app *application) clientError(w http.ResponseWriter, status int) {
-	http.Error(w, http.StatusText(status), status)
 }
 
 func (app *application) newTemplateData(r *http.Request) templateData {
+	now := time.Now() // Single time call for consistency
+
 	return templateData{
-		CurrentYear:    time.Now().Year(),
-		CurrentMonth:   int(time.Now().Month()),
-		CurrentDay:     time.Now().Day(),
-		CurrentDoW:     time.Now().Weekday(),
-		CurrentHour:    time.Now().Hour(),
-		CurrentMinutes: time.Now().Minute(),
+		Title:          "Marshall Humble", // Default title
+		CurrentYear:    now.Year(),
+		CurrentMonth:   int(now.Month()),
+		CurrentDay:     now.Day(),
+		CurrentDoW:     now.Weekday(),
+		CurrentHour:    now.Hour(),
+		CurrentMinutes: now.Minute(),
 	}
 }
 
@@ -55,14 +53,17 @@ func (app *application) render(w http.ResponseWriter, r *http.Request, status in
 		return
 	}
 
-	fmt.Println(data.Post.Content)
+	// Set content type header before writing status
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 	// If the template is written to the buffer without any errors, we are safe
 	// to go ahead and write the HTTP status code to http.ResponseWriter.
 	w.WriteHeader(status)
 
-	// Write the contents of the buffer to the http.ResponseWriter. Note: this
-	// is another time where we pass our http.ResponseWriter to a function that
-	// takes an io.Writer.
-	_, _ = buf.WriteTo(w)
+	// Write the contents of the buffer to the http.ResponseWriter.
+	_, err = buf.WriteTo(w)
+	if err != nil {
+		// Log the error but don't call serverError since headers are already sent
+		app.logger.Error("error writing response", "error", err)
+	}
 }

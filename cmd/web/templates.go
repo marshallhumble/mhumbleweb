@@ -12,6 +12,7 @@ import (
 )
 
 type templateData struct {
+	Title          string // Add this line
 	CurrentYear    int
 	CurrentMonth   int
 	CurrentDay     int
