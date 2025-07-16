@@ -48,7 +48,8 @@ func (app *application) getArticle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data.Post = post
-	app.render(w, r, http.StatusOK, string(post.Content), data)
+	data.Post = post                               // Set the post first
+	data.Title = post.Title + " - Marshall Humble" // Then use post.Title (not data.Post.Title)
 
+	app.render(w, r, http.StatusOK, string(post.Content), data)
 }

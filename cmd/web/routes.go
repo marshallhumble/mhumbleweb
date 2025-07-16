@@ -27,7 +27,8 @@ func (app *application) routes() http.Handler {
 	mux.HandleFunc("GET /articles/", app.articles)
 	mux.HandleFunc("GET /articles/{id}", app.getArticle)
 
-	standard := alice.New(app.recoverPanic, app.logRequest, commonHeaders)
+	// Updated middleware chain with improved security
+	standard := alice.New(app.recoverPanic, app.logRequest, securityHeaders)
 	return standard.Then(mux)
 }
 
@@ -40,7 +41,7 @@ func (nfs neuteredFileSystem) Open(path string) (http.File, error) {
 
 	s, err := f.Stat()
 	if s.IsDir() {
-		index := filepath.Join(path, "index.css")
+		index := filepath.Join(path, "index.html")
 		if _, err := nfs.fs.Open(index); err != nil {
 			closeErr := f.Close()
 			if closeErr != nil {
