@@ -6,14 +6,14 @@
 app = 'mhumble-io'
 primary_region = 'dfw'
 
+[registry]
+"ghcr.io" = { username = "marshallhumble", password_env = "REGISTRY_PASSWORD" }
+
 [build]
 image = "ghcr.io/marshallhumble/mhumbleweb:latest"  # Replace if using a versioned tag
 
 [deploy]
   strategy = "rolling"
-
-[env]
-  TUNNEL_TOKEN = ""  # This is injected from Fly secrets
 
 [http_service]
   internal_port = 443
