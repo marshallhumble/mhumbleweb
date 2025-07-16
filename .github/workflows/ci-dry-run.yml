@@ -1,0 +1,38 @@
+name: PR Build Check
+
+on:
+  pull_request:
+    branches: [main, master]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image (no push)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64
+          push: false  # Don't push, just build
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:pr-test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Test image locally
+        run: |
+          # Optional: Run basic tests on the built image
+          echo "✅ Docker build successful"
+          echo "Image would be tagged as: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:pr-test"
