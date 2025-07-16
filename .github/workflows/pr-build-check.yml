@@ -3,6 +3,7 @@ name: PR Build Check
 on:
   pull_request:
     branches: [main, master]
+  # No push trigger - only PRs!
 
 env:
   REGISTRY: ghcr.io
