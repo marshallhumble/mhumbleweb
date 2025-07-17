@@ -28,7 +28,7 @@ COPY --from=build /src/tls/cert.pem ./tls/cert.pem
 COPY --from=build /src/tls/key.pem ./tls/key.pem
 COPY --from=build /src/internal/models/json/data.json ./internal/models/json/data.json
 
-EXPOSE 443
+EXPOSE 80
 
 # Run the Go application directly
-CMD ["/var/www/html/web"]
+CMD ["/var/www/html/web", "-addr=0.0.0.0:80"]

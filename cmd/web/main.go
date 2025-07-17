@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"crypto/tls"
+	"errors"
 	"flag"
 	"html/template"
 	"log/slog"
@@ -27,9 +27,7 @@ func main() {
 		AddSource: true,
 	}))
 
-	addr := flag.String("addr", ":443", "HTTPS network address")
-	certFile := flag.String("cert", "./tls/cert.pem", "Path to TLS certificate")
-	keyFile := flag.String("key", "./tls/key.pem", "Path to TLS private key")
+	addr := flag.String("addr", ":80", "HTTPS network address")
 
 	flag.Parse()
 
@@ -45,26 +43,10 @@ func main() {
 		templateCache: templateCache,
 	}
 
-	tlsConfig := &tls.Config{
-		CurvePreferences: []tls.CurveID{tls.X25519, tls.CurveP256},
-		CipherSuites: []uint16{
-			tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
-			tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-			tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,
-			tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,
-			tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
-			tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
-		},
-		MinVersion: tls.VersionTLS12,
-		MaxVersion: tls.VersionTLS13,
-		ServerName: "mhumble.io",
-	}
-
 	srv := &http.Server{
 		Addr:         *addr,
 		Handler:      app.routes(),
 		ErrorLog:     slog.NewLogLogger(logger.Handler(), slog.LevelError),
-		TLSConfig:    tlsConfig,
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
@@ -76,9 +58,9 @@ func main() {
 
 	// Start server in a goroutine
 	go func() {
-		logger.Info("starting HTTPS server", "addr", srv.Addr)
-		err := srv.ListenAndServeTLS(*certFile, *keyFile)
-		if err != nil && err != http.ErrServerClosed {
+		logger.Info("starting HTTP server", "addr", srv.Addr)
+		err := srv.ListenAndServe()
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			logger.Error("server failed to start", "error", err)
 			os.Exit(1)
 		}
