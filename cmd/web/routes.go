@@ -27,6 +27,16 @@ func (app *application) routes() http.Handler {
 	mux.HandleFunc("GET /articles/", app.articles)
 	mux.HandleFunc("GET /articles/{id}", app.getArticle)
 
+	// Health check
+	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, err := w.Write([]byte("healthy"))
+		if err != nil {
+			return
+		}
+
+	})
+
 	// Updated middleware chain with improved security
 	standard := alice.New(app.recoverPanic, app.logRequest, securityHeaders)
 	return standard.Then(mux)
