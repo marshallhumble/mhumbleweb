@@ -15,7 +15,7 @@ func securityHeaders(next http.Handler) http.Handler {
 			"style-src 'self' 'unsafe-inline' https://kit.fontawesome.com https://ka-f.fontawesome.com",
 			"font-src 'self' https://kit.fontawesome.com https://ka-f.fontawesome.com",
 			"img-src 'self' data:",
-			"connect-src 'self'",
+			"connect-src 'self' https://kit.fontawesome.com https://ka-f.fontawesome.com", // Added FontAwesome domains
 			"frame-ancestors 'none'", // More modern than X-Frame-Options
 			"base-uri 'self'",
 			"form-action 'self'",
