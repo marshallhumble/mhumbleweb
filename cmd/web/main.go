@@ -27,8 +27,8 @@ func main() {
 		AddSource: true,
 	}))
 
-	// Changed to HTTP port 80 - Fly.io handles TLS termination
-	addr := flag.String("addr", ":80", "HTTP network address")
+	addr := flag.String("addr", ":80", "HTTPS network address")
+
 	flag.Parse()
 
 	templateCache, err := newTemplateCache()
@@ -43,7 +43,6 @@ func main() {
 		templateCache: templateCache,
 	}
 
-	// HTTP server configuration (no TLS config needed)
 	srv := &http.Server{
 		Addr:         *addr,
 		Handler:      app.routes(),
@@ -60,7 +59,6 @@ func main() {
 	// Start server in a goroutine
 	go func() {
 		logger.Info("starting HTTP server", "addr", srv.Addr)
-		// Changed from ListenAndServeTLS to ListenAndServe
 		err := srv.ListenAndServe()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			logger.Error("server failed to start", "error", err)
