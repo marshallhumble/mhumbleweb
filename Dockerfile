@@ -32,10 +32,13 @@ RUN addgroup -g 1001 -S appgroup && \
     adduser -u 1001 -S appuser -G appgroup
 
 # Create necessary directories
+# Create necessary directories with proper permissions
 RUN mkdir -p /var/www/html \
              /var/log/supervisor \
+             /var/run \
              /etc/supervisor/conf.d && \
-    chown -R appuser:appgroup /var/www/html /var/log/supervisor
+    chown -R appuser:appgroup /var/www/html /var/log/supervisor && \
+    chmod 755 /var/run
 
 WORKDIR /var/www/html
 
