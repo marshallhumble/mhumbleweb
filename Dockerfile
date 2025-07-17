@@ -61,8 +61,10 @@ directory=/var/www/html
 user=appuser
 autostart=true
 autorestart=true
-stderr_logfile=/var/log/supervisor/webapp.log
-stdout_logfile=/var/log/supervisor/webapp.log
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
 
 [program:cloudflared]
 command=/usr/local/bin/cloudflared tunnel --no-autoupdate run --token %(ENV_TUNNEL_TOKEN)s
