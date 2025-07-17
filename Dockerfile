@@ -34,6 +34,7 @@ RUN addgroup -g 1001 -S appgroup && \
 # Create necessary directories
 RUN mkdir -p /var/www/html \
              /var/log/supervisor \
+             /var/run \
              /etc/supervisor/conf.d && \
     chown -R appuser:appgroup /var/www/html /var/log/supervisor
 
