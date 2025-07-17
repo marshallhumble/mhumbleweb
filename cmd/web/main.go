@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"html/template"
 	"log/slog"
@@ -61,7 +62,7 @@ func main() {
 		logger.Info("starting HTTP server", "addr", srv.Addr)
 		// Changed from ListenAndServeTLS to ListenAndServe
 		err := srv.ListenAndServe()
-		if err != nil && err != http.ErrServerClosed {
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			logger.Error("server failed to start", "error", err)
 			os.Exit(1)
 		}

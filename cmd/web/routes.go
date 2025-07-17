@@ -30,7 +30,11 @@ func (app *application) routes() http.Handler {
 	// Health check
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("healthy"))
+		_, err := w.Write([]byte("healthy"))
+		if err != nil {
+			return
+		}
+
 	})
 
 	// Updated middleware chain with improved security
