@@ -78,13 +78,5 @@
     "Created": "2025-05-19T12:00:00Z",
     "Updated": "2025-05-19T12:00:00Z",
     "Topic": "Security, Docker, FIPS"
-  },
-  {
-    "Id": 11,
-    "Title":"Building a FIPS-Compliant Python Container",
-    "Content": "05192925_json.gohtml",
-    "Created": "2025-05-19T12:00:00Z",
-    "Updated": "2025-05-19T12:00:00Z",
-    "Topic": "Security"
   }
 ]

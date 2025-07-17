@@ -1,30 +1,19 @@
-# fly.toml app configuration file generated for mhumble-io on 2024-08-13T16:46:22-05:00
-#
-# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
-#
-
+# fly.toml app configuration file
 app = 'mhumble-io'
 primary_region = 'dfw'
 
 [registry]
 "ghcr.io" = { username = "marshallhumble", password_env = "REGISTRY_PASSWORD" }
 
-[build]
-image = "ghcr.io/marshallhumble/mhumbleweb:latest"  # Replace if using a versioned tag
-
 [deploy]
   strategy = "rolling"
 
 [http_service]
-  internal_port = 443
+  internal_port = 80
   force_https = true
   auto_stop_machines = true
   auto_start_machines = true
   min_machines_running = 0
-
-[[services.ports]]
-  handlers = ["tls"]
-  port = 443
 
 [[vm]]
   memory = '256mb'
