@@ -27,7 +27,7 @@ func main() {
 		AddSource: true,
 	}))
 
-	addr := flag.String("addr", ":80", "HTTPS network address")
+	addr := flag.String("addr", ":8080", "HTTPS network address")
 
 	flag.Parse()
 

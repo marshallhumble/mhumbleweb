@@ -56,7 +56,7 @@ logfile=/var/log/supervisor/supervisord.log
 pidfile=/var/run/supervisord.pid
 
 [program:webapp]
-command=/var/www/html/web -addr=0.0.0.0:80
+command=/var/www/html/web -addr=0.0.0.0:8080
 directory=/var/www/html
 user=appuser
 autostart=true
@@ -80,11 +80,11 @@ RUN chmod +x ./web && \
     chown -R appuser:appgroup /var/www/html
 
 # Expose port 80 (for internal HTTP)
-EXPOSE 80
+EXPOSE 8080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:80/health || exit 1
+    CMD curl -f http://localhost:8080/health || exit 1
 
 # Start supervisor to manage both processes
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
