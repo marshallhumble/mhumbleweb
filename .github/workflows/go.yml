@@ -91,13 +91,3 @@ jobs:
         run: |
           # Build for Linux (your target platform)
           GOOS=linux GOARCH=amd64 go build -o bin/app-linux-amd64 ./cmd/web
-          
-          # Build for other platforms (optional)
-          GOOS=darwin GOARCH=amd64 go build -o bin/app-darwin-amd64 ./cmd/web
-          GOOS=windows GOARCH=amd64 go build -o bin/app-windows-amd64.exe ./cmd/web
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: binaries
-          path: bin/
