@@ -1,9 +1,8 @@
 
-# 🧠 Go Personal Site with Secure Docker + Cloudflare Tunnel
+# 🧠 Go Personal Site with Secure Docker
 
 This project hosts your personal Go-powered site securely using:
 
-- 🔐 **Cloudflare Tunnel** for encrypted external access
 - 🐳 **Docker** with `wolfi-base` for minimal and secure builds
 - 🧾 **Cosign** + **SBOMs** + **Grype** for image signing and vulnerability scanning
 - 🚀 **GitHub Actions** to automate build, push, sign, and verify
@@ -17,9 +16,6 @@ go-personal-site/
 ├── cmd/                   # Go app entrypoint
 │   └── web/
 ├── internal/models/json/  # Data model or content
-├── tls/                  # TLS cert/key for HTTPS
-├── cloudflared/          # Tunnel config + runtime cert
-├── scripts/              # Dev + CI automation
 ├── cert.yaml             # SOPS-encrypted cert source
 ├── cert.enc.yaml         # Encrypted Cloudflare cert
 ├── age.key               # Local age private key (gitignored)
