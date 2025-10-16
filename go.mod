@@ -1,5 +1,5 @@
 module mhumbleweb
 
-go 1.24.5
+go 1.25.3
 
 require github.com/justinas/alice v1.2.0

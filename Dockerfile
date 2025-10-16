@@ -5,7 +5,7 @@ FROM cgr.dev/chainguard/wolfi-base AS build
 
 RUN apk add wolfictl
 
-RUN wolfictl install go@1.25.0 tzdata binutils curl || apk add --no-cache go tzdata binutils curl
+RUN wolfictl install go@1.25.3 tzdata binutils curl || apk add --no-cache go tzdata binutils curl
 
 # Install cloudflared
 RUN curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 \
