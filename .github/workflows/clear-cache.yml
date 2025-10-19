@@ -1,0 +1,16 @@
+name: Clear old caches
+on:
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly on Sunday
+  workflow_dispatch:
+
+jobs:
+  clear-caches:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Clear caches
+        run: |
+          gh api repos/marshallhumble/mhumbleweb/actions/caches --paginate --jq '.actions_caches[] | .id' | xargs -I {} gh api repos/marshallhumble/mhumbleweb/actions/caches/{} -X DELETE
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

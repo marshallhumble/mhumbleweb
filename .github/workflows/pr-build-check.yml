@@ -30,7 +30,7 @@ jobs:
           push: false  # Don't push, just build
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:pr-test
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-to: type=gha,mode=max,image-manifest=true, max-size=100m
 
       - name: Test image locally
         run: |
