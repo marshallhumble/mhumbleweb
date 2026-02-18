@@ -1,0 +1,93 @@
+
+<h1>Static Application Security Testing (SAST) in CI/CD</h1>
+<p>SAST tools analyze source code, bytecode, or binaries to detect security vulnerabilities early in the development lifecycle.</p>
+
+<h2>✅ Using Semgrep for JavaScript, Python, and Go</h2>
+<pre class="code-block">
+name: Security Scan - Semgrep
+on: [push, pull_request]
+jobs:
+  semgrep:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Install Semgrep
+        run: pip install semgrep
+      - name: Run Semgrep
+        run: semgrep --config=auto --error
+    </pre>
+
+<h2>✅ Using Bandit for Python Security</h2>
+<pre class="code-block">
+name: Security Scan - Bandit
+on: [push, pull_request]
+jobs:
+  bandit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Install Bandit
+        run: pip install bandit
+      - name: Run Bandit
+        run: bandit -r . -lll
+    </pre>
+
+<h2>✅ Using Gosec for Go Security</h2>
+<pre class="code-block">
+name: Security Scan - Gosec
+on: [push, pull_request]
+jobs:
+  gosec:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Install Gosec
+        run: go install github.com/securego/gosec/v2/cmd/gosec@latest
+      - name: Run Gosec
+        run: gosec ./...
+    </pre>
+
+<h2>SAST Tools Comparison</h2>
+<table border="1" cellspacing="0" cellpadding="5">
+    <tr>
+        <th>Tool</th>
+        <th>Best for</th>
+        <th>Supported Languages</th>
+        <th>Free/Paid</th>
+    </tr>
+    <tr>
+        <td>Semgrep</td>
+        <td>Code security analysis</td>
+        <td>JavaScript, Python, Go</td>
+        <td>Free</td>
+    </tr>
+    <tr>
+        <td>Bandit</td>
+        <td>Python security scanning</td>
+        <td>Python</td>
+        <td>Free</td>
+    </tr>
+    <tr>
+        <td>Gosec</td>
+        <td>Go security scanning</td>
+        <td>Go</td>
+        <td>Free</td>
+    </tr>
+    <tr>
+        <td>SonarQube</td>
+        <td>Code quality and security</td>
+        <td>Multi-language</td>
+        <td>Free/Paid</td>
+    </tr>
+    <tr>
+        <td>Snyk Code</td>
+        <td>AI-powered static analysis</td>
+        <td>JavaScript, Python, Go</td>
+        <td>Paid</td>
+    </tr>
+</table>
+
+<p>By integrating these security tools into your CI/CD pipeline, you can ensure early detection of vulnerabilities and reduce security risks before deployment.</p>

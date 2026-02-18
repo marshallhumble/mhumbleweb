@@ -1,22 +1,21 @@
 use serde::{Deserialize, Serialize};
+use std::fs;
 
-
-#[derive(Clone)]
-pub struct AppState {
-    pub posts: Vec<Post>,
-}
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Post {
-    #[serde(rename = "Id")]
-    pub id: i32,
-    #[serde(rename = "Title")]
+    pub id: u32,
     pub title: String,
-    #[serde(rename = "Content")]
-    pub content: String,
-    #[serde(rename = "Created")]
     pub created: String,
-    #[serde(rename = "Updated")]
     pub updated: String,
-    #[serde(rename = "Topic")]
     pub topic: String,
+    pub filename: String,
+}
+
+pub fn load_posts() -> Vec<Post> {
+    let data = fs::read_to_string("internal/models/json/data.json")
+        .expect("Failed to read data.json");
+    let mut posts: Vec<Post> = serde_json::from_str(&data)
+        .expect("Failed to parse data.json");
+    posts.sort_by(|a, b| b.created.cmp(&a.created));
+    posts
 }

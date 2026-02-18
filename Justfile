@@ -1,99 +1,108 @@
-# Load environment variables
-set dotenv-load
+# mhumble.io
 
-# Variables
-github_user := "marshallhumble"
-repo := "mhumbleweb"
-image_name := "ghcr.io/" + github_user + "/" + repo
-build_date := `date +%Y%m%d`
-git_commit := `git rev-parse --short HEAD 2>/dev/null || echo "unknown"`
-full_image := image_name + ":" + build_date
+Personal site built with Rust and Axum. Migrated from Go in 2026.
 
-# Show available recipes
-default:
-    @just --list
+## Stack
 
+- **Axum 0.8** — async web framework
+- **Tera** — template engine
+- **tower-http** — static file serving and security headers
+- **Tokio** — async runtime
+- **Alpine Linux** — minimal runtime container
+
+## Project Structure
+
+```
+mhumbleweb/
+├── src/
+│   ├── main.rs          # App entry point, router, AppState
+│   ├── handlers.rs      # Route handlers
+│   ├── middleware.rs    # Security headers
+│   ├── models.rs        # Post struct, JSON loader
+│   └── view_models.rs   # Template view models
+├── templates/
+│   ├── base.html        # Shared layout
+│   ├── index.html       # Homepage
+│   ├── articles.html    # Article list with topic filter
+│   ├── article.html     # Single article view
+│   ├── about.html       # About page
+│   └── articles/        # Article content (HTML)
+├── static/
+│   ├── css/main.css     # Terminal aesthetic styles
+│   ├── js/prism.js      # Syntax highlighting
+│   └── images/          # Static images
+├── internal/models/json/
+│   └── data.json        # Article metadata
+├── Dockerfile           # Two-stage build (rust:alpine → alpine)
+├── fly.toml             # Fly.io deployment config
+└── Justfile             # Build, sign, scan, deploy recipes
+```
+
+## Local Development
+
+```bash
+# Run in dev mode
+just run
+
+# Run with release optimizations
+just run-release
+
+# Check and lint
+just check
+```
+
+## Security
+
+Security headers are applied globally via tower-http middleware:
+
+- Content-Security-Policy
+- Strict-Transport-Security (HSTS)
+- X-Content-Type-Options
+- X-Frame-Options
+- Referrer-Policy
+- Permissions-Policy
+
+## Building and Deploying
+
+```bash
 # Install required tools
-setup-tools:
-    @echo "Installing tools: cosign, syft, trivy, wolfictl, buildx..."
-    command -v cosign >/dev/null || brew install sigstore/tap/cosign
-    command -v syft >/dev/null || brew install syft
-    command -v trivy >/dev/null || brew install trivy
-    command -v docker-buildx >/dev/null || docker buildx create --use
+just setup-tools
 
-# Login to GitHub Container Registry
-login-ghcr:
-    #!/usr/bin/env bash
-    if [ -z "$GHCR_TOKEN" ]; then
-        echo "❌ GHCR_TOKEN not set. Please set it in .env"
-        exit 1
-    fi
-    echo "$GHCR_TOKEN" | docker login ghcr.io -u {{github_user}} --password-stdin
+# Login to GHCR
+just login-ghcr
 
-# Build and push Docker image
-build:
-    @echo "Building: {{full_image}}"
-    docker buildx build --platform linux/amd64 --tag {{full_image}} --load .
-    docker tag {{full_image}} {{image_name}}:latest
-    docker push {{full_image}}
-    docker push {{image_name}}:latest
+# Full pipeline: build, sign, SBOM, attest, scan, deploy
+just full-pipeline
 
-# Build locally without pushing
-build-local:
-    docker buildx build --platform linux/amd64 --tag {{full_image}} --load .
-    docker tag {{full_image}} {{image_name}}:latest
+# Or run steps individually
+just build
+just sign
+just attach-sbom
+just scan-cves
+just fly-deploy
+```
 
-# Sign image with Cosign
-sign:
-    COSIGN_EXPERIMENTAL=1 cosign sign --yes {{full_image}}
+Requires a `.env` file with:
 
-# Generate and attach SBOM
-attach-sbom:
-    syft {{full_image}} -o spdx-json > sbom.json
-    cosign attach sbom --sbom sbom.json {{full_image}}
+```
+GHCR_TOKEN=your_github_pat
+```
 
-# Generate SLSA provenance attestation
-attest:
-    COSIGN_EXPERIMENTAL=1 cosign attest --yes --predicate sbom.json --type https://slsa.dev/provenance/v0.2 {{full_image}}
+## Image Signing and Supply Chain
 
-# Scan for CVEs
-scan-cves:
-    trivy image {{full_image}} || true
+Images are signed with Cosign, SBOM generated with Syft in SPDX format,
+SLSA provenance attestation attached, and CVE scanned with Trivy before deploy.
 
-# Verify image signature
-verify:
-    COSIGN_EXPERIMENTAL=1 cosign verify {{full_image}}
+```bash
+# Verify a deployed image
+just verify
+```
 
-# Deploy to Fly.io
-fly-deploy:
-    fly deploy --local-only --image {{image_name}}:latest
+## Deployment
 
-# Run tests locally
-test:
-    go test ./...
+Hosted on Fly.io in the `dfw` region. TLS is terminated at the Fly.io edge.
+The container runs plain HTTP internally on port 3000.
 
-# Run app locally
-run:
-    go run ./cmd/web
-
-# Clean up
-clean:
-    rm -f sbom.json sbom.html
-    docker image prune -f
-
-# Show current config
-show-config:
-    @echo "GitHub User: {{github_user}}"
-    @echo "Repo: {{repo}}"
-    @echo "Image: {{image_name}}"
-    @echo "Full Image: {{full_image}}"
-    @echo "Git Commit: {{git_commit}}"
-
-# Complete pipeline
-full-pipeline: setup-tools login-ghcr build sign attach-sbom attest verify scan-cves fly-deploy
-
-# Development build
-dev-build: build-local scan-cves
-
-# Security pipeline only
-security-pipeline: build sign attach-sbom attest verify scan-cves
+```bash
+fly deploy --local-only --image ghcr.io/marshallhumble/mhumbleweb:latest
+```

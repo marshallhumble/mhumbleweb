@@ -1,134 +1,108 @@
+# mhumble.io
 
-# 🧠 Go Personal Site with Secure Docker
+Personal site built with Rust and Axum. Migrated from Go in 2026.
 
-This project hosts your personal Go-powered site securely using:
+## Stack
 
-- 🐳 **Docker** with `wolfi-base` for minimal and secure builds
-- 🧾 **Cosign** + **SBOMs** + **Grype** for image signing and vulnerability scanning
-- 🚀 **GitHub Actions** to automate build, push, sign, and verify
+- **Axum 0.8** — async web framework
+- **Tera** — template engine
+- **tower-http** — static file serving and security headers
+- **Tokio** — async runtime
+- **Alpine Linux** — minimal runtime container
 
----
+## Project Structure
 
-## 🧱 Folder Structure
+```
+mhumbleweb/
+├── src/
+│   ├── main.rs          # App entry point, router, AppState
+│   ├── handlers.rs      # Route handlers
+│   ├── middleware.rs    # Security headers
+│   ├── models.rs        # Post struct, JSON loader
+│   └── view_models.rs   # Template view models
+├── templates/
+│   ├── base.html        # Shared layout
+│   ├── index.html       # Homepage
+│   ├── articles.html    # Article list with topic filter
+│   ├── article.html     # Single article view
+│   ├── about.html       # About page
+│   └── articles/        # Article content (HTML)
+├── static/
+│   ├── css/main.css     # Terminal aesthetic styles
+│   ├── js/prism.js      # Syntax highlighting
+│   └── images/          # Static images
+├── internal/models/json/
+│   └── data.json        # Article metadata
+├── Dockerfile           # Two-stage build (rust:alpine → alpine)
+├── fly.toml             # Fly.io deployment config
+└── Justfile             # Build, sign, scan, deploy recipes
+```
+
+## Local Development
 
 ```bash
-go-personal-site/
-├── cmd/                   # Go app entrypoint
-│   └── web/
-├── internal/models/json/  # Data model or content
-├── cert.yaml             # SOPS-encrypted cert source
-├── cert.enc.yaml         # Encrypted Cloudflare cert
-├── age.key               # Local age private key (gitignored)
-├── Dockerfile
-├── Makefile
-├── .gitignore
-├── go.mod / go.sum
+# Run in dev mode
+just run
+
+# Run with release optimizations
+just run-release
+
+# Check and lint
+just check
 ```
 
----
+## Security
 
-## 🚀 Quick Start
+Security headers are applied globally via tower-http middleware:
 
-### 🔧 Local Setup
-```bash
-brew install sops age
-brew install cosign syft grype
-```
+- Content-Security-Policy
+- Strict-Transport-Security (HSTS)
+- X-Content-Type-Options
+- X-Frame-Options
+- Referrer-Policy
+- Permissions-Policy
 
-### 🔐 Encode Cloudflare Cert for GitHub
-```bash
-base64 -i cloudflared/cert.pem > cert.pem.b64
-```
-Add `cert.pem.b64` to GitHub Secrets as `CF_CERT_B64`.
-
----
-
-## 🛠 Local Testing
-
-Run this to build and test locally:
-```bash
-bash scripts/test-local.sh
-```
-
-✅ This will:
-- Build the image as `local-go-site:dev`
-- Mount your `cloudflared/` directory
-- Run the app on port 443
-
----
-
-## 🧪 Decryption (Local or CI)
-
-Recreate `cloudflared/cert.pem` from SOPS-encrypted cert:
-```bash
-bash scripts/decrypt-cert.sh
-```
-
----
-
-## 🏗 Secure CI/CD Pipeline (GitHub Actions)
-
-The `Makefile` automates your full production build pipeline:
+## Building and Deploying
 
 ```bash
-make full-pipeline
+# Install required tools
+just setup-tools
+
+# Login to GHCR
+just login-ghcr
+
+# Full pipeline: build, sign, SBOM, attest, scan, deploy
+just full-pipeline
+
+# Or run steps individually
+just build
+just sign
+just attach-sbom
+just scan-cves
+just fly-deploy
 ```
 
-This will:
-- 🔄 Update your `wolfi-base` image
-- 🔧 Build the Docker image
-- 🔐 Sign it with Cosign
-- 📦 Generate and attach SBOM
-- 🧾 Create and attach SLSA provenance
-- 🛡️ Scan for CVEs using Grype
-- ✅ Verify signatures
+Requires a `.env` file with:
 
----
+```
+GHCR_TOKEN=your_github_pat
+```
 
-## 🔐 Secrets to Add in GitHub
+## Image Signing and Supply Chain
 
-| Secret Name     | Description                          |
-|----------------|--------------------------------------|
-| `GHCR_TOKEN`    | GitHub PAT with `write:packages`     |
-| `CF_CERT_B64`   | base64-encoded cloudflared cert.pem  |
-| `AGE_PRIVATE_KEY_B64` | base64 of your `age.key` file     |
+Images are signed with Cosign, SBOM generated with Syft in SPDX format,
+SLSA provenance attestation attached, and CVE scanned with Trivy before deploy.
 
----
-
-## 📦 Deployment (Fly.io, etc.)
-
-Use the signed image from `ghcr.io/<user>/<repo>:tag`
 ```bash
-flyctl deploy --image ghcr.io/<user>/<repo>:tag
+# Verify a deployed image
+just verify
 ```
 
-You can also run Cloudflare Tunnel independently:
+## Deployment
+
+Hosted on Fly.io in the `dfw` region. TLS is terminated at the Fly.io edge.
+The container runs plain HTTP internally on port 3000.
+
 ```bash
-cloudflared tunnel --config cloudflared/config.yml run
+fly deploy --local-only --image ghcr.io/marshallhumble/mhumbleweb:latest
 ```
-
----
-
-## 📋 .gitignore Notes
-
-```gitignore
-cloudflared/cert.pem
-tls/cert.pem
-tls/key.pem
-cert.yaml
-cert.pem.b64
-age.key
-sbom.json
-```
-
----
-
-## 📣 Need Help?
-- [Cloudflare Tunnel Docs](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/)
-- [Cosign](https://docs.sigstore.dev/cosign/overview/)
-- [SOPS](https://github.com/mozilla/sops)
-- [Fly.io](https://fly.io/docs/)
-
----
-
-Stay secure. Stay reproducible. 🚀

@@ -1,82 +1,82 @@
 [
   {
-    "Id": 1,
-    "Title": "Using Json in Go",
-    "Content": "08072024_json.gohtml",
-    "Created": "2024-08-07T12:00:00Z",
-    "Updated": "2024-08-07T12:00:00Z",
-    "Topic": "Json"
+    "id": 1,
+    "title": "Using Json in Go",
+    "filename": "08072024_json",
+    "created": "2024-08-07T12:00:00Z",
+    "updated": "2024-08-07T12:00:00Z",
+    "topic": "Go"
   },
   {
-    "Id": 2,
-    "Title": "Upgrade Docker Containers in Place",
-    "Content": "09112024_json.gohtml",
-    "Created": "2024-09-11T12:00:00Z",
-    "Updated": "2024-09-11T12:00:00Z",
-    "Topic": "Docker"
+    "id": 2,
+    "title": "Upgrade Docker Containers in Place",
+    "filename": "09112024_json",
+    "created": "2024-09-11T12:00:00Z",
+    "updated": "2024-09-11T12:00:00Z",
+    "topic": "Docker"
   },
   {
-    "Id": 3,
-    "Title": "Google's Safe Open for Go",
-    "Content": "09182024_json.gohtml",
-    "Created": "2024-09-18T12:00:00Z",
-    "Updated": "2024-09-18T12:00:00Z",
-    "Topic": "Security"
+    "id": 3,
+    "title": "Google's Safe Open for Go",
+    "filename": "09182024_json",
+    "created": "2024-09-18T12:00:00Z",
+    "updated": "2024-09-18T12:00:00Z",
+    "topic": "Security"
   },
   {
-    "Id": 4,
-    "Title": "Modern Password Policies: Why Common Password Policies Fail and What Works Better",
-    "Content": "02182025_json.gohtml",
-    "Created": "2025-02-18T12:00:00Z",
-    "Updated": "2025-02-18T12:00:00Z",
-    "Topic": "Security"
+    "id": 4,
+    "title": "Modern Password Policies: Why Common Password Policies Fail and What Works Better",
+    "filename": "02182025_json",
+    "created": "2025-02-18T12:00:00Z",
+    "updated": "2025-02-18T12:00:00Z",
+    "topic": "Security"
   },
   {
-    "Id": 5,
-    "Title":"Shift Left: Why Security Should Start Early in Development",
-    "Content": "03142025_json.gohtml",
-    "Created": "2025-03-14T12:00:00Z",
-    "Updated": "2025-03-14T12:00:00Z",
-    "Topic": "Security"
+    "id": 5,
+    "title": "Shift Left: Why Security Should Start Early in Development",
+    "filename": "03142025_json",
+    "created": "2025-03-14T12:00:00Z",
+    "updated": "2025-03-14T12:00:00Z",
+    "topic": "Security"
   },
   {
-    "Id": 6,
-    "Title":"Infrastructure as Code (IaC) Security in CI/CD",
-    "Content": "03012025_json.gohtml",
-    "Created": "2025-03-01T12:00:00Z",
-    "Updated": "2025-03-01T12:00:00Z",
-    "Topic": "Security"
+    "id": 6,
+    "title": "Infrastructure as Code (IaC) Security in CI/CD",
+    "filename": "03012025_json",
+    "created": "2025-03-01T12:00:00Z",
+    "updated": "2025-03-01T12:00:00Z",
+    "topic": "Security"
   },
   {
-    "Id": 7,
-    "Title":"Static Application Security Testing (SAST) in CI/CD",
-    "Content": "03162025_json.gohtml",
-    "Created": "2025-03-16T12:00:00Z",
-    "Updated": "2025-03-16T12:00:00Z",
-    "Topic": "Security"
+    "id": 7,
+    "title": "Static Application Security Testing (SAST) in CI/CD",
+    "filename": "03162025_json",
+    "created": "2025-03-16T12:00:00Z",
+    "updated": "2025-03-16T12:00:00Z",
+    "topic": "Security"
   },
   {
-    "Id": 8,
-    "Title":"Dynamic Application Security Testing (DAST) in CI/CD",
-    "Content": "03102025_json.gohtml",
-    "Created": "2025-03-10T12:00:00Z",
-    "Updated": "2025-03-10T12:00:00Z",
-    "Topic": "Security"
+    "id": 8,
+    "title": "Dynamic Application Security Testing (DAST) in CI/CD",
+    "filename": "03102025_json",
+    "created": "2025-03-10T12:00:00Z",
+    "updated": "2025-03-10T12:00:00Z",
+    "topic": "Security"
   },
   {
-    "Id": 9,
-    "Title":"A Jar Full of Trouble: Why pickle.loads() is inherently insecure",
-    "Content": "05122025_json.gohtml",
-    "Created": "2025-05-12T12:00:00Z",
-    "Updated": "2025-05-12T12:00:00Z",
-    "Topic": "Python, Application Security"
+    "id": 9,
+    "title": "A Jar Full of Trouble: Why pickle.loads() is Inherently Insecure",
+    "filename": "05122025_json",
+    "created": "2025-05-12T12:00:00Z",
+    "updated": "2025-05-12T12:00:00Z",
+    "topic": "Python"
   },
   {
-    "Id": 10,
-    "Title":"Building a FIPS-Compliant Python Container",
-    "Content": "05192925_json.gohtml",
-    "Created": "2025-05-19T12:00:00Z",
-    "Updated": "2025-05-19T12:00:00Z",
-    "Topic": "Security, Docker, FIPS"
+    "id": 10,
+    "title": "Building a FIPS-Compliant Python Container",
+    "filename": "05192025_json",
+    "created": "2025-05-19T12:00:00Z",
+    "updated": "2025-05-19T12:00:00Z",
+    "topic": "Security"
   }
 ]

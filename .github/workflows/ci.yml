@@ -2,8 +2,8 @@ name: Build, Security Scan, and Deploy
 
 on:
   push:
-    branches: [main, master]  # Only build/push on main branch
-  workflow_dispatch: # Allow manual triggering
+    branches: [main]
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
@@ -51,7 +51,7 @@ jobs:
 
       - name: Build and push Docker image
         id: build
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           platforms: linux/amd64
@@ -107,7 +107,6 @@ jobs:
         uses: superfly/flyctl-actions/setup-flyctl@master
 
       - name: Deploy to Fly.io
-        run: |
-          flyctl deploy --local-only --image ghcr.io/marshallhumble/mhumbleweb:latest
+        run: flyctl deploy --local-only --image ghcr.io/marshallhumble/mhumbleweb:latest
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}

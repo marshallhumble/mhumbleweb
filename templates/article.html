@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}{{ post.title }} // Marshall Humble{% endblock title %}
+
+{% block extra_styles %}
+<style>
+.article-header {
+    padding: 3rem 0 2rem;
+    border-bottom: 1px solid var(--border);
+    animation: fadeUp 0.4s ease both;
+}
+
+.article-prompt {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+}
+
+.article-prompt .prompt-symbol {
+    color: var(--green);
+    margin-right: 0.5rem;
+}
+
+.article-prompt a {
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.15s;
+}
+
+.article-prompt a:hover { color: var(--green); }
+
+.article-title {
+    font-size: clamp(1.4rem, 4vw, 2.2rem);
+    font-weight: 700;
+    color: var(--green);
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    text-shadow: 0 0 40px rgba(77, 255, 145, 0.2);
+    margin-bottom: 1rem;
+}
+
+.article-meta {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.article-meta .article-tag {
+    font-size: 10px;
+    padding: 1px 6px;
+    border: 1px solid var(--border);
+}
+
+.article-nav {
+    display: flex;
+    justify-content: space-between;
+    padding: 2rem 0;
+    border-top: 1px solid var(--border);
+    gap: 1rem;
+}
+
+.article-nav a {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.15s;
+    max-width: 45%;
+}
+
+.article-nav a:hover { color: var(--green); }
+.article-nav .nav-prev::before { content: '← '; color: var(--green-muted); }
+.article-nav .nav-next::after  { content: ' →'; color: var(--green-muted); }
+.article-nav .nav-next { text-align: right; margin-left: auto; }
+</style>
+{% endblock extra_styles %}
+
+{% block content %}
+
+<div class="article-header">
+    <p class="article-prompt">
+        <span class="prompt-symbol">$</span>
+        <a href="/articles">./articles</a> / {{ post.id }}
+    </p>
+    <h1 class="article-title">{{ post.title }}</h1>
+    <div class="article-meta">
+        <span>{{ post.created | truncate(length=10, end="") }}</span>
+        <span class="article-tag {{ post.topic | lower }}">
+            {% if post.topic | lower == "dotnet" %}.NET{% else %}{{ post.topic }}{% endif %}
+        </span>
+    </div>
+</div>
+
+<div class="article-body">
+    {{ content | safe }}
+</div>
+
+<div class="article-nav">
+    {% if post.id > 1 %}
+    <a class="nav-prev" href="/articles/{{ post.id - 1 }}">previous</a>
+    {% endif %}
+    {% if post.id < total %}
+    <a class="nav-next" href="/articles/{{ post.id + 1 }}">next</a>
+    {% endif %}
+</div>
+
+{% endblock content %}

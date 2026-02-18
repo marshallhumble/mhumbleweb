@@ -1,10 +1,19 @@
+use serde::Serialize;
+use crate::models::Post;
+
+#[derive(Debug, Serialize)]
 pub struct HomeViewModel {
-    pub recent_posts: Vec<PostSummary>,
+    pub posts: Vec<Post>,
 }
 
-pub struct PostSummary {
-    pub id: i32,
-    pub title: String,
-    pub created: String,
-    pub topic: String, // split on comma before here
+#[derive(Debug, Serialize)]
+pub struct ArticleListViewModel {
+    pub posts: Vec<Post>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct ArticleViewModel {
+    pub post: Post,
+    pub content: String,
+    pub total: usize,
 }

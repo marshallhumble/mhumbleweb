@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Articles // Marshall Humble{% endblock title %}
+
+{% block extra_styles %}
+<style>
+.page-header {
+    padding: 3rem 0 2rem;
+    border-bottom: 1px solid var(--border);
+    animation: fadeUp 0.4s ease both;
+}
+
+.page-prompt {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+}
+
+.page-prompt .prompt-symbol {
+    color: var(--green);
+    margin-right: 0.5rem;
+}
+
+.page-title {
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    font-weight: 700;
+    color: var(--green);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    text-shadow: 0 0 40px rgba(77, 255, 145, 0.2);
+}
+
+.page-subtitle {
+    margin-top: 0.75rem;
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+    animation: fadeUp 0.4s 0.1s ease both;
+}
+
+.filter-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-right: 0.5rem;
+}
+
+.filter-btn {
+    padding: 2px 10px;
+    border: 1px solid var(--border);
+    background: none;
+    color: var(--text-muted);
+    font-family: inherit;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.filter-btn:hover,
+.filter-btn.active {
+    border-color: var(--green-muted);
+    color: var(--green);
+    background: rgba(77,255,145,0.04);
+}
+
+.full-article-list {
+    animation: fadeUp 0.4s 0.15s ease both;
+}
+</style>
+{% endblock extra_styles %}
+
+{% block content %}
+
+<div class="page-header">
+    <p class="page-prompt">
+        <span class="prompt-symbol">$</span>ls -lt ./articles
+    </p>
+    <h1 class="page-title">All Articles<span class="cursor"></span></h1>
+    <p class="page-subtitle">{{ posts | length }} posts // sorted by date</p>
+</div>
+
+<div class="filter-bar">
+    <span class="filter-label">filter:</span>
+    <button class="filter-btn active" onclick="filterPosts('all')">all</button>
+    <button class="filter-btn" onclick="filterPosts('security')">security</button>
+    <button class="filter-btn" onclick="filterPosts('docker')">docker</button>
+    <button class="filter-btn" onclick="filterPosts('go')">go</button>
+    <button class="filter-btn" onclick="filterPosts('python')">python</button>
+    <button class="filter-btn" onclick="filterPosts('dotnet')">.net</button>
+</div>
+
+<div class="full-article-list">
+    {% for post in posts %}
+    <a class="article-item"
+       href="/articles/{{ post.id }}"
+       data-topic="{{ post.topic | lower }}">
+        <span class="article-date">{{ post.created | truncate(length=10, end="") }}</span>
+        <span class="article-title">{{ post.title }}</span>
+        <span class="article-tag {{ post.topic | lower }}">
+            {% if post.topic | lower == "dotnet" %}.NET{% else %}{{ post.topic }}{% endif %}
+        </span>
+    </a>
+    {% endfor %}
+</div>
+
+<script>
+    function filterPosts(topic) {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        event.target.classList.add('active');
+        document.querySelectorAll('.article-item').forEach(item => {
+            if (topic === 'all' || item.dataset.topic === topic) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+</script>
+
+{% endblock content %}

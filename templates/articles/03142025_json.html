@@ -1,0 +1,204 @@
+
+<h1>Securing Software Development: Shifting Left? Or Just start earlier?</h1>
+
+<br>
+<p>Traditional security practices often come too late in the Software Development Life Cycle (SDLC), leading to
+vulnerabilities that are costly and time-consuming to fix. Shifting security left means integrating security
+    practices early in the development process, reducing risk and minimizing technical debt.</p>
+<br>
+<p>The <a href="https://www.researchgate.net/figure/BM-System-Science-Institute-Relative-Cost-of-Fixing-Defects_fig1_255965523">
+        Systems Science Institute</a> at IBM and <a href="https://www.nist.gov/system/files/documents/director/planning/report02-3.pdf">
+        National Institute of Standards and Technology (NIST)'s</a> reports agree that finding bugs earlier in development
+can lead to massive cost and time reduction. It can cost 6 times as much to fix a bug in during implementation
+than to fix one identified during design. The cost to fix bugs found during the testing phase can be 15x more than
+those found during design.</p>
+<br>
+<h2>Why Security Should Start Early</h2>
+<br>
+<ul>
+    <li>Security as an Afterthought: Testing security only in the testing phase leads to costly fixes.</li>
+    <li>Increased Cost of Fixing Late-Stage Issues: A vulnerability found in production is significantly more expensive to remediate.</li>
+    <li>Lack of Developer Awareness: Without security training, developers unintentionally introduce vulnerabilities.</li>
+    <li>Compliance and Audit Pressures: Security fixes at the last minute create delays and inefficiencies.</li>
+</ul>
+<br>
+<h2>Benefits of Shifting Security earlier in the SDLC</h2>
+<ul>
+    <li>Faster and Cheaper Remediation</li>
+    <li>Better Developer Security Awareness</li>
+    <li>Reduced Risk of Data Breaches</li>
+    <li>Lower Technical Debt</li>
+    <li>Stronger DevSecOps Culture</li>
+</ul>
+<br>
+<h2>Practical Steps</h2>
+<br>
+
+<h3>1. Develop a culture of security</h3>
+<br>
+<p>The first thing it to shift mindsets. Often, development teams consider security and QA teams to be an annoyance
+    rather than a benefit. The focus is only on getting the code out the door. Anything in the way of that is seen
+    as either something to be handled later, or derided as a negative.</p>
+<br>
+<p>In order to change that mindset, it is imperative to encourage a culture of security. This means a focus on secure
+    practices and also manager/leader buy-in from the start. If the leads tell the new team members to just "click
+    through this mandatory training," it is clear that they don't care about it, so neither should the new dev on the
+    team. Buy-in from across the organization is critical.</p>
+<br>
+
+<ul>
+    <li>Encourage a culture of security throughout the organization</li>
+    <li>Require code reviews with security checks.</li>
+    <li>Encourage threat modeling during the design phase.</li>
+</ul>
+<br>
+<p>Some resources here can be found on OWASP;(for example, the
+    <a href="https://owasp.org/www-project-developer-guide/">OWASP Developer Guide</a>, the
+    <a href="https://owasp.org/www-project-threat-model/">OWASP Threat Modeling Guide</a>,
+    and OWASP DevSlop on YouTube's guide to
+    <a href="https://www.youtube.com/watch?v=fb-t3WWHsMQ">Code Review the Offensive Security Way).</a></p>
+<br>
+<h3>2. Train Developers in Security Awareness</h3>
+<br>
+<ul>
+    <li>Provide regular security training and simulated attack exercises.</li>
+    <li>Encourage developers to participate in bug bounty programs.</li>
+    <li>Use capture-the-flag (CTF) challenges to make security training interactive.</li>
+</ul>
+<br>
+<p>Training should also be more than just an annual click through: ideas should be integrated into talks and
+    standups through the year. Organizations can also encourage devs to participate in Capture the Flag (CTF)
+    events or bug bounty programs in the organization and outside. Other areas for growth and training are
+    <a href="https://www.hackthebox.com/">Hack the Box</a>, <a href="https://www.vulnhub.com/">Vulnhub</a> and
+    <a href="https://owasp.org/www-project-juice-shop/">OWASP Juice Shop</a> for "hands on" examples.</p>
+<br>
+
+<h3>3. Automate Security in CI/CD Pipelines</h3>
+<br>
+<p>Here I want to review the OWASP Top 10 from 2021 (2025 report hopefully soon!) we see that many of these issues
+    could have been prevented by using code review and analysis early/earlier in development. I will go over the top 5,
+    and what testing could have prevented this, Here is also an acronym list in case you need it:</p>
+<br>
+<ul>
+    <li>SAST - Static Application Testing</li>
+    <li>DAST - Dynamic Application Testing</li>
+    <li>Fuzzing - Testing the application by supplying random/malformed inputs</li>
+    <li>SCA - Software Composition Analysis</li>
+    <li>SBOM - Software Bill of Materials</li>
+</ul>
+<br>
+<ol>
+    <li>Broken Access Control - this could have been fixed using DAST or security unit tests</li>
+    <li>Cryptographic failures - (could be multiple issues but) DAST/secure unit tests, dependency management</li>
+    <li>Injection - SAST, DAST, fuzzing</li>
+    <li>Security Misconfiguration - Security unit tests, DAST, Fuzzing</li>
+    <li>Vulnerable and outdated components - SBOM, Dependency Management/Checks, SCA</li>
+</ol>
+<br>
+<p>SAST is great for shift left, it shows code issues in the entire code base, and can even be done on individual pull
+    requests. This works to help resolve issues before they get into the code base, or at least can be fixed early.
+    This is of course assuming a SAST scanner is implemented early. Many tools can also analyze issues in the IDE,
+    prior to pull request/commit.</p>
+<br>
+<p>Some of the downsides are a lot of false positives, even in smaller code bases I see a lot of incorrectly flagged
+    issues. This can lead to developers ignore the scanner, or someone having to spend significant time clearing the
+    issues. Another issue is that it does not see run time issues, or APIs/Integrations, it is only scanning the code
+    that is in that repository. Some things will be missed.</p>
+<br>
+<p>DAST, as mentioned above, scans the running application. This is important because it is what someone outside your
+    organization would do as well. Most attacks on the internet are looking for weak points and are not that
+    sophisticated. They hit unpatched, existing issues, on unsecured software.</p>
+<br>
+<p>Some of the downsides are long scan times,
+    or inconvenient ones that need planning if there is a possibility that it will take the application down.
+    There is also a limit to what it can see, as it is just looking in externally, so at times one may spend time
+    sorting out where the issue is.</p>
+<br>
+<p>Examples of Security Unit tests would be to check for things like characters and inputs that can cause issues with
+    SQL Injection, (like items on this SQL Injection Cheat Sheet); XSS Scripting attacks or permission issues/user
+    access issues, tests that a regular user can’t access an admin page, password requirements, etc. Some of these
+    should be caught with a SAST scanner, but I have seen them miss things.</p>
+<br>
+<p>Fuzz testing (fuzzing) is also another item that can used in toolkits to find issues before someone else does.
+    Fuzzing introduces intentionally malformed content into software. This can find misconfigurations, information
+    leaks, buffer overflows memory leaks, errors on parsing input and more.</p>
+<br>
+<h3>To summarize:</h3>
+<br>
+<ul>
+    <li>Use tools inside the IDE, linting (readable code is more secure!) and securing coding plugins</li>
+    <li>Use tools to help with code analysis like SAST, DAST and fuzzing</li>
+    <li>Conduct security unit tests alongside functional tests.</li>
+    <li>Use tools to help with dependency management like SCA, SBOM and dependency checks for third party libraries tools to
+        check code quality and asses vulnerabilities</li>
+</ul>
+<br>
+<h3>Some examples of tools above are:</h3>
+<br>
+<ul>
+    <li>Linters: ESLint (JS/TS), JSHint (JS), Prettier (JS/TS), Go fmt (Go lang), Black (Python), Pylint (Python), etc.</li>
+    <li>SAST:(most of these work with multiple languages) like SonarQube, Checkmarx, or Semgrep, ESLint
+        (eslint-plugin-security) Synk, NodeJSScan (JS [Node]), Bandit (Python), GoSec (Go), Staticcheck (Go), Goline
+        and Govet (Go) can also be used for code "Smells".</li>
+    <li>DAST: OWASP ZAP (Zed Attack Proxy) works on multiple languages, and can be automated into the CI/CD pipeline,
+        Arachni (JS), Netsparker (React, Angular, Vue), Wapiti (Python), Gauntlt (Go) integrated into other tools like
+        ZAP, Nikto, and SQLMap, Tsunmai, Nikto and Burp Suite (multiple languages, scanners/manual testing tools)</li>
+    <li>SCA: Snyk, OWASP Dependency-Check, Dependabot (Multiple languages, can be automated into CI/CD), npm audit (JS),
+        Retire.js (JS), Pip-audit (Python), Safety (Python), GoSec (Go), Go Audit (Go)</li>
+    <li>Fuzzing: Jazzer.js (JS), Fuzzilli (JS), Node-Fuzz (JS), Ahteris (Python), FuzzyWuzzy (Python), Radamsa (Python),
+        Go-Fuzz (Go) - Go native fuzzing library that works alongside Go test packages, gfuzz (Go)</li>
+</ul>
+<br>
+<h3>4. Enforce Secure Dependencies Management</h3>
+<br>
+<ul>
+    <li>Use tools like Snyk, OWASP Dependency-Check, and GitHub Dependabot to scan for vulnerabilities.</li>
+    <li>Set up automated alerts for dependency vulnerabilities.</li>
+    <li>Maintain a SBOM (Software Bill of Materials) for supply chain security.</li>
+</ul>
+<p>Teams are probably familiar with some of these automated security scanners, but maybe want to see how an SBOM
+    fits into security.</p>
+<p>Clear and transparent dependency management helps ensure that organizations can quickly and easily identify issues
+    in dependencies. Components can be more quickly analyzed against CVE scores for risk management and priority.
+    Securing the components also can mitigate supply chain attacks from using unauthorized components. It is also
+    required by Executive Order 14028, passed May 12, 2021, which covers software vendors to the US Government.</p>
+<br>
+<h3>Here are a list of some SBOM tools.</h3>
+<br>
+<ul>
+    <li>Syft (multiple languages, works with Docker) OWASP Dependency-Track (multiple), CycloneDX CLI
+        (JS [npm, yarn, pnpm]), CycloneDX Python, Pip-audit (Python), bom (Go), Go-List/Go-Audit (Go)</li>
+</ul>
+<br>
+<h3>Use Infrastructure as Code (IaC) Security Checks</h3>
+
+<p>In addition to our code, we need to have a secure infrastructure to run it on.</p>
+<br>
+<ul>
+    <li>Use Terraform, Ansible, or CloudFormation security scanning tools.</li>
+    <li>Prevent misconfigurations by scanning IaC templates before deployment.</li>
+    <li>Run container security scanning if using Docker/Kubernetes.</li>
+</ul>
+<br>
+<h3>Tools for checking IaC:</h3>
+<br>
+<ul>
+    <li>Checkov: Scans Terraform, Kubernetes, CloudFormation, and Docker files for security misconfigurations.
+        upports AWS, Azure, and Google Cloud security policies. This can be used in the CI/CD pipeline</li>
+    <li>TFSec: Terraform, looks for hardcoded secrets, insecure IAM policies, and misconfigurations.</li>
+    <li>KubeLinter: Kubernetes YAML, Helm charts, and Kustomize files for security risks. Identifies privilege escalation
+    risks, insecure container configurations, and network issues.</li>
+    <li>kube-bench: Checks Kubernetes clusters against CIS Benchmarks. Detects RBAC misconfigurations,
+        API server exposure, and pod security issues.</li>
+    <li>cfn-link: Checks AWS CloudFormation templates against security best practices.</li>
+    <li>CFN-Nag: Used for AWS CloudFormation configurations. Identifies publicly exposed S3 buckets, overly
+        permissive IAM roles, and hardcoded credentials.</li>
+    <li>Trivy: Docker, Kubernetes and looks for vulnerabilities in containerized applications</li>
+    <li>Docker Bench for Security: Evaluates Docker Daemon security settings based on CIS Benchmarks.</li>
+    <li>Docker Desktop can also be used to view image details and CVEs, and issues with containers</li>
+</ul>
+<br>
+<p>Shifting security mindsets, reviewing code earlier and proper testing reduces risk, lowers costs, and strengthens
+    security posture. By integrating security in development, automating checks, and training developers,
+    organizations can build secure software from the ground up.</p>
+<br>

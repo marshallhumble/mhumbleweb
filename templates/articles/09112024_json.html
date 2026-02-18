@@ -1,0 +1,54 @@
+    <h1>Upgrade a Running Docker Container</h1>
+        <br>
+    <p>
+        I was looking for a way to upgrade a Docker image in a running container and had to do some digging to find it.
+        So, I thought I would pass the knowledge on. This method also works for upgrading a database container while
+        preserving its data.
+    </p>
+        <br>
+    <p>
+        Overall, the process is straightforward. First, ensure you are in the same directory as your Docker Compose file.
+        Then, run the following command:
+    </p>
+    <br>
+    <pre>
+    <code class="language-bash line-numbers" data-prismjs-copy="Copy Me!">
+      ❯❯❯  docker compose pull && docker compose up -d && docker image prune -af
+
+        [+] Pulling 12/12
+        ✔ adminer Pulled                                         0.9s
+        ✔ db Pulled                                              9.7s
+        ✔ ed6a7145c00e Pull complete                             3.2s
+        ...
+        ✔ 0cc6c2d50cf6 Pull complete                             8.3s
+    </code>
+</pre>
+    <br>
+    <p>
+        In my setup, I am running Adminer and MySQL in this Docker container. The command <code>docker compose pull</code> fetches the latest image versions.
+        The <code>docker compose up</code> command, as noted in the Docker documentation, "Builds, (re)creates, starts, and attaches to containers for a service."
+        The <code>-d</code> flag runs the container in detached mode, allowing it to continue running in the background.
+    </p>
+    <br>
+    <p>
+        The final command, <code>docker image prune -af</code>, cleans up any unused images that do not have
+        at least one container associated with them. The <code>-a</code> flag removes all unused images, and <code>-f</code> forces deletion without confirmation.
+        Running this regularly helps free up disk space, as unused images can accumulate quickly.
+    </p>
+    <br>
+    <pre>
+        <code class="language-bash line-numbers" data-prismjs-copy="Copy Me!">
+        [+] Running 2/2
+        ✔ Container webfileshare-adminer-1  Running                    0.0s
+        ✔ Container webfileshare-db-1       Starting                   1.9s
+        Deleted Images:
+        untagged: mysql@sha256:..
+        deleted: ...
+
+        Total reclaimed space: 609.1MB
+        </code>
+    </pre>
+    <br>
+    <p>
+        Over time, these unused images can accumulate, so it’s good practice to prune them periodically to free up space.
+    </p>

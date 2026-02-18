@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}Marshall Humble // mhumble.io{% endblock title %}
+
+{% block extra_styles %}
+<style>
+.hero {
+    padding: 4rem 0 3rem;
+    border-bottom: 1px solid var(--border);
+    animation: fadeUp 0.4s ease both;
+}
+
+.section:nth-of-type(1) { animation: fadeUp 0.4s 0.1s ease both; }
+.section:nth-of-type(2) { animation: fadeUp 0.4s 0.2s ease both; }
+
+.hero-prompt {
+    color: var(--text-muted);
+    font-size: 12px;
+    margin-bottom: 0.5rem;
+}
+
+.hero-prompt .prompt-symbol {
+    color: var(--green);
+    margin-right: 0.5rem;
+}
+
+.hero-name {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    color: var(--green);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    text-shadow: 0 0 40px rgba(77, 255, 145, 0.2);
+    margin-bottom: 0.25rem;
+}
+
+.hero-title {
+    font-size: 1rem;
+    color: var(--amber);
+    font-weight: 400;
+    margin-bottom: 2rem;
+    letter-spacing: 0.05em;
+}
+
+.hero-title .sep { color: var(--text-muted); margin: 0 0.5rem; }
+
+.hero-bio {
+    max-width: 640px;
+    color: var(--text);
+    font-size: 13.5px;
+    line-height: 1.8;
+    margin-bottom: 2rem;
+}
+
+.hero-bio p + p { margin-top: 1rem; }
+
+.hero-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border: 1px solid var(--border-bright);
+    color: var(--text-dim);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+}
+
+.tag.highlight {
+    border-color: var(--green-muted);
+    color: var(--green);
+    background: rgba(77,255,145,0.04);
+}
+</style>
+{% endblock extra_styles %}
+
+{% block content %}
+
+<section class="hero">
+    <p class="hero-prompt">
+        <span class="prompt-symbol">$</span>whoami
+    </p>
+    <h1 class="hero-name">Marshall Humble<span class="cursor"></span></h1>
+    <p class="hero-title">
+        Senior Application Security Engineer
+        <span class="sep">//</span>
+        CISSP
+        <span class="sep">//</span>
+        mhumble.io
+    </p>
+    <div class="hero-bio">
+        <p>
+            17+ years in tech and 8+ focused on security across military, government,
+            and private sectors. I enjoy bridging the gap between developers and security.
+            I specialize in building secure, auditable systems and helping engineering teams
+            ship code that holds up to real-world adversarial pressure, not just checkboxes.
+        </p>
+    </div>
+    <div class="hero-tags">
+        <span class="tag highlight">AppSec</span>
+        <span class="tag highlight">CISSP</span>
+        <span class="tag highlight">GPEN</span>
+        <span class="tag">Rust</span>
+        <span class="tag">Go</span>
+        <span class="tag">Healthcare</span>
+        <span class="tag">Penetration Testing</span>
+        <span class="tag">Threat Modeling</span>
+        <span class="tag">.NET</span>
+    </div>
+</section>
+
+<section class="section">
+    <div class="section-header">
+        <span class="section-label">recent writing</span>
+        <div class="section-line"></div>
+        <a class="section-count" href="/articles">view all →</a>
+    </div>
+    <div class="article-list">
+        {% for post in posts %}
+        <a class="article-item"
+           href="/articles/{{ post.id }}"
+           data-topic="{{ post.topic | lower }}">
+            <span class="article-date">{{ post.created | truncate(length=10, end="") }}</span>
+            <span class="article-title">{{ post.title }}</span>
+            <span class="article-tag {{ post.topic | lower }}">
+                {% if post.topic | lower == "dotnet" %}.NET{% else %}{{ post.topic }}{% endif %}
+            </span>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="section">
+    <div class="section-header">
+        <span class="section-label">projects</span>
+        <div class="section-line"></div>
+        <a class="section-count" href="https://github.com/marshallhumble" target="_blank" rel="noopener">
+            github.com/marshallhumble →
+        </a>
+    </div>
+    <div class="project-grid">
+        <a class="project-card" href="https://github.com/marshallhumble/mhumbleweb" target="_blank" rel="noopener" data-index="01">
+            <div class="project-name">mhumble.io</div>
+            <div class="project-desc">Personal site. Migrated from Go to Axum (Rust) — minimal dependencies, fast cold starts, JSON-backed content.</div>
+            <div class="project-meta">
+                <span class="project-lang lang-rust">Rust</span>
+            </div>
+        </a>
+        <a class="project-card" href="https://github.com/marshallhumble/appsec-pipeline" target="_blank" rel="noopener" data-index="02">
+            <div class="project-name">appsec-pipeline</div>
+            <div class="project-desc">Reusable GitHub Actions workflows for application security scanning across Go, Rust, Python, and C# codebases.</div>
+            <div class="project-meta">
+                <span class="project-lang lang-go">Go</span>
+            </div>
+        </a>
+        <a class="project-card" href="https://github.com/marshallhumble" target="_blank" rel="noopener" data-index="03">
+            <div class="project-name">see more on github</div>
+            <div class="project-desc">Additional tooling, security research, and experiments live on GitHub.</div>
+            <div class="project-meta">
+                <span class="project-lang lang-rust">Rust</span>
+                <span class="project-lang lang-go">Go</span>
+                <span class="project-lang lang-python">Python</span>
+            </div>
+        </a>
+    </div>
+</section>
+
+{% endblock content %}

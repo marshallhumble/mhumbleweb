@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Marshall Humble // mhumble.io{% endblock title %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Fira+Code:wght@300;400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/static/css/main.css" />
+    <link rel="stylesheet" href="/static/css/prism.css" />
+    {% block extra_styles %}{% endblock extra_styles %}
+</head>
+<body>
+
+<nav>
+    <a class="nav-brand" href="/"><span>~/</span>mhumble</a>
+    <ul class="nav-links">
+        <li><a href="/articles">articles</a></li>
+        <li><a href="https://github.com/marshallhumble" target="_blank" rel="noopener">github</a></li>
+        <li><a href="/about">about</a></li>
+    </ul>
+    <div class="nav-status">
+        <div class="status-dot"></div>
+        online
+    </div>
+</nav>
+
+<main class="container">
+    {% block content %}{% endblock content %}
+</main>
+
+<footer>
+    <div class="container">
+        <div class="footer-inner">
+            <ul class="footer-links">
+                <li><a href="https://www.linkedin.com/in/marshallhumble/" target="_blank" rel="noopener">linkedin</a></li>
+                <li><a href="https://github.com/marshallhumble" target="_blank" rel="noopener">github</a></li>
+                <li><a href="mailto:marshall@mhumble.io">email</a></li>
+            </ul>
+            <span class="footer-copy">© 2026 Marshall Humble // MIT licensed</span>
+        </div>
+    </div>
+</footer>
+
+<script src="/static/js/prism.js" defer></script>
+</body>
+</html>

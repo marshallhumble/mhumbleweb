@@ -1,0 +1,445 @@
+{% extends "base.html" %}
+
+{% block title %}About // Marshall Humble{% endblock title %}
+
+{% block extra_styles %}
+<style>
+.about-header {
+    padding: 3rem 0 2rem;
+    border-bottom: 1px solid var(--border);
+    animation: fadeUp 0.4s ease both;
+}
+
+.about-prompt {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+}
+
+.about-prompt .prompt-symbol {
+    color: var(--green);
+    margin-right: 0.5rem;
+}
+
+.about-title {
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    font-weight: 700;
+    color: var(--green);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    text-shadow: 0 0 40px rgba(77, 255, 145, 0.2);
+}
+
+.about-intro {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 3rem;
+    padding: 3rem 0;
+    border-bottom: 1px solid var(--border);
+    animation: fadeUp 0.4s 0.1s ease both;
+}
+
+.about-photo img {
+    width: 100%;
+    border: 1px solid var(--border);
+    display: block;
+    filter: grayscale(20%);
+    transition: filter 0.3s;
+}
+
+.about-photo img:hover { filter: grayscale(0%); }
+
+.about-photo-caption {
+    margin-top: 0.75rem;
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.about-photo-caption strong { color: var(--text-dim); }
+
+.about-bio {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.about-bio p {
+    font-size: 13.5px;
+    color: var(--text);
+    line-height: 1.85;
+}
+
+.about-bio a {
+    color: var(--green);
+    text-decoration: none;
+    border-bottom: 1px solid var(--green-muted);
+    transition: border-color 0.15s;
+}
+
+.about-bio a:hover { border-color: var(--green); }
+
+.about-section {
+    padding: 2.5rem 0;
+    border-bottom: 1px solid var(--border);
+    animation: fadeUp 0.4s 0.2s ease both;
+}
+
+.about-section-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    color: var(--green);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+}
+
+.about-section-title::before { content: '# '; color: var(--green-muted); }
+
+.experience-item {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 1.5rem;
+    padding: 1.25rem 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.experience-item:last-child { border-bottom: none; }
+
+.experience-dates {
+    font-size: 11px;
+    color: var(--text-muted);
+    padding-top: 0.2rem;
+    line-height: 1.6;
+}
+
+.experience-dates .experience-org {
+    display: block;
+    color: var(--amber);
+    margin-top: 0.25rem;
+}
+
+.experience-role {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+}
+
+.experience-desc {
+    font-size: 12.5px;
+    color: var(--text-dim);
+    line-height: 1.7;
+}
+
+.experience-desc ul {
+    margin: 0.5rem 0 0 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.experience-desc ul li::marker { color: var(--green-muted); }
+
+.two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    padding: 2.5rem 0;
+    animation: fadeUp 0.4s 0.25s ease both;
+}
+
+.cert-list, .edu-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.cert-item, .edu-item {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border);
+    background: var(--bg-panel);
+}
+
+.cert-name, .edu-degree {
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 600;
+}
+
+.cert-issuer, .edu-school {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 0.2rem;
+}
+
+.cert-status {
+    display: inline-block;
+    font-size: 10px;
+    padding: 1px 6px;
+    border: 1px solid var(--green-muted);
+    color: var(--green);
+    margin-top: 0.4rem;
+}
+
+.cert-status.pending {
+    border-color: var(--amber-dim);
+    color: var(--amber);
+}
+
+.skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+}
+
+.skill-group {
+    background: var(--bg-panel);
+    padding: 1.25rem;
+}
+
+.skill-group-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: var(--amber);
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+}
+
+.skill-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.skill-tag {
+    font-size: 11px;
+    padding: 1px 8px;
+    border: 1px solid var(--border-bright);
+    color: var(--text-dim);
+}
+
+@media (max-width: 700px) {
+    .about-intro { grid-template-columns: 1fr; }
+    .about-photo { max-width: 280px; }
+    .experience-item { grid-template-columns: 1fr; gap: 0.5rem; }
+    .two-col { grid-template-columns: 1fr; gap: 2rem; }
+}
+</style>
+{% endblock extra_styles %}
+
+{% block content %}
+
+<div class="about-header">
+    <p class="about-prompt">
+        <span class="prompt-symbol">$</span>cat ./about.md
+    </p>
+    <h1 class="about-title">About<span class="cursor"></span></h1>
+</div>
+
+<div class="about-intro">
+    <div class="about-photo">
+        <img src="/static/images/marshall_north_pole.jpg" alt="Marshall Humble at the North Pole" />
+        <p class="about-photo-caption">
+            <strong>90°N — The North Pole</strong><br>
+            Surfaced through ice aboard USS Charlotte (SSN-766), a Los Angeles-improved class fast attack submarine.
+            Most ice broken through by a 688i class submarine.
+        </p>
+    </div>
+    <div class="about-bio">
+        <p>
+            CISSP-certified AppSec engineer with 17+ years in tech and 8+ focused on security
+            across military, government, and private sectors. I specialize in helping teams embed
+            security into their SDLC through automation, training, and secure-by-default design.
+        </p>
+        <p>
+            Hands-on with Go, Rust, Python, C#, and Terraform. Skilled in tools like Veracode,
+            Semgrep, Snyk, and secure container builds. Experienced integrating security into
+            modern CI/CD workflows.
+        </p>
+        <p>
+            Passionate about developer enablement, scaling threat modeling, and making security
+            approachable. I leverage pen testing insight to anticipate attacker behavior, reduce
+            noise, and help teams focus on what actually matters.
+        </p>
+        <p>
+            Before tech, I spent 11 years in the US Navy as a lead technology instructor and
+            network and systems engineer — including deployments to the Arctic. I hold an MBA
+            from UT Austin and am completing a graduate certificate in Penetration Testing
+            and Ethical Hacking at SANS.
+        </p>
+    </div>
+</div>
+
+<div class="about-section">
+    <div class="about-section-title">experience</div>
+
+    <div class="experience-item">
+        <div class="experience-dates">
+            Sep 2025 — Present
+            <span class="experience-org">Zelis</span>
+        </div>
+        <div>
+            <div class="experience-role">Senior Application Security Engineer</div>
+            <div class="experience-desc">
+                Building AppSec capabilities for a healthcare technology company serving 700+
+                health plans and processing $300B+ in claims annually.
+                <ul>
+                    <li>Architected AppSec framework integrating OWASP SAMM with behavioral economics to reduce developer friction</li>
+                    <li>Developed 12 custom Semgrep rules for auth, authorization, and CSRF patterns in C# and Go</li>
+                    <li>Created secure templates for ASP.NET Core and Go HTTP services with 10+ built-in security controls</li>
+                    <li>Implemented STRIDE-based threat modeling for Critical/High risk applications</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="experience-item">
+        <div class="experience-dates">
+            Jul 2023 — Sep 2025
+            <span class="experience-org">findhelp</span>
+        </div>
+        <div>
+            <div class="experience-role">Application Security & Compliance Manager</div>
+            <div class="experience-desc">
+                <ul>
+                    <li>Built FIPS-compliant, zero-CVE container image eliminating 500+ vulnerabilities</li>
+                    <li>Increased Go codebase test coverage from 0% to 78.22%</li>
+                    <li>Led CMS, TX-RAMP, and HIPAA audits with zero material findings</li>
+                    <li>Achieved 100% StateRAMP Ready status through comprehensive control documentation</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="experience-item">
+        <div class="experience-dates">
+            Jul 2017 — Jul 2023
+            <span class="experience-org">Fiserv</span>
+        </div>
+        <div>
+            <div class="experience-role">Security & Compliance Government Consultant</div>
+            <div class="experience-desc">
+                Led multi-audit readiness across HIPAA, CMS, HITRUST, and SOC 2 for state-level
+                platforms. Defined controls, managed evidence, and supported RFPs for government
+                technology bids.
+            </div>
+        </div>
+    </div>
+
+    <div class="experience-item">
+        <div class="experience-dates">
+            Mar 2003 — Feb 2014
+            <span class="experience-org">US Navy</span>
+        </div>
+        <div>
+            <div class="experience-role">Lead Technology Instructor & Network and Systems Engineer</div>
+            <div class="experience-desc">
+                11 years leading secure system operations, IA compliance, and technical training
+                worldwide. Led a team of 16 instructors. Managed global audit documentation and
+                deployed to the Arctic aboard USS Charlotte (SSN-766).
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="two-col">
+    <div>
+        <div class="about-section-title">certifications</div>
+        <div class="cert-list">
+            <div class="cert-item">
+                <div class="cert-name">CISSP</div>
+                <div class="cert-issuer">(ISC)²</div>
+                <span class="cert-status">active</span>
+            </div>
+            <div class="cert-item">
+                <div class="cert-name">GIAC Certified Incident Handler (GCIH)</div>
+                <div class="cert-issuer">GIAC / SANS</div>
+                <span class="cert-status">active</span>
+            </div>
+            <div class="cert-item">
+                <div class="cert-name">GIAC Certified Penetration Tester (GPEN)</div>
+                <div class="cert-issuer">GIAC / SANS</div>
+                <span class="cert-status">active</span>
+            </div>
+            <div class="cert-item">
+                <div class="cert-name">Secure Coding</div>
+                <div class="cert-issuer">Semgrep</div>
+                <span class="cert-status">active</span>
+            </div>
+            <div class="cert-item">
+                <div class="cert-name">Foundational C# with Microsoft</div>
+                <div class="cert-issuer">Microsoft</div>
+                <span class="cert-status">active</span>
+            </div>
+        </div>
+    </div>
+    <div>
+        <div class="about-section-title">education</div>
+        <div class="edu-list">
+            <div class="edu-item">
+                <div class="edu-degree">Graduate Certificate — Penetration Testing & Ethical Hacking</div>
+                <div class="edu-school">SANS Technology Institute · Expected Jun 2026</div>
+            </div>
+            <div class="edu-item">
+                <div class="edu-degree">Master of Business Administration (MBA)</div>
+                <div class="edu-school">UT Austin — Red McCombs School of Business · 2014–2016</div>
+            </div>
+            <div class="edu-item">
+                <div class="edu-degree">BSBA, Business/Commerce</div>
+                <div class="edu-school">Hawaii Pacific University · 2010–2013</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="about-section">
+    <div class="about-section-title">technical skills</div>
+    <div class="skills-grid">
+        <div class="skill-group">
+            <div class="skill-group-label">Languages</div>
+            <div class="skill-tags">
+                <span class="skill-tag">Go</span>
+                <span class="skill-tag">Rust</span>
+                <span class="skill-tag">Python</span>
+                <span class="skill-tag">C#</span>
+                <span class="skill-tag">.NET</span>
+            </div>
+        </div>
+        <div class="skill-group">
+            <div class="skill-group-label">AppSec Tools</div>
+            <div class="skill-tags">
+                <span class="skill-tag">Semgrep</span>
+                <span class="skill-tag">Veracode</span>
+                <span class="skill-tag">Snyk</span>
+                <span class="skill-tag">OWASP ZAP</span>
+                <span class="skill-tag">Burp Suite</span>
+            </div>
+        </div>
+        <div class="skill-group">
+            <div class="skill-group-label">Infrastructure</div>
+            <div class="skill-tags">
+                <span class="skill-tag">Terraform</span>
+                <span class="skill-tag">Docker</span>
+                <span class="skill-tag">Kubernetes</span>
+                <span class="skill-tag">CI/CD</span>
+                <span class="skill-tag">GitHub Actions</span>
+            </div>
+        </div>
+        <div class="skill-group">
+            <div class="skill-group-label">Frameworks</div>
+            <div class="skill-tags">
+                <span class="skill-tag">OWASP SAMM</span>
+                <span class="skill-tag">NIST 800-53</span>
+                <span class="skill-tag">HITRUST</span>
+                <span class="skill-tag">HIPAA</span>
+                <span class="skill-tag">FedRAMP</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

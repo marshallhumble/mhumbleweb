@@ -1,0 +1,160 @@
+    <h1>A Jar Full of Trouble: Why pickle.loads() is inherently insecure</h1>
+        <img alt="" src="/static/images/pickle_post/pickle_jar.png">
+    <br>
+    <h2>Introduction</h2>
+    <br>
+    <p>The python pickle library is an object serializer. It takes input and stores it perfectly and, when
+        unserialized, returns it exactly how you sent it. This can be great in some cases, storing program state,
+        caching, etc.</p>
+    <br>
+    <p>However, it has no filter, and will return exactly what you give it. The Python pickle docs note:</p>
+    <br>
+    <blockquote>
+        <p>"Warning: The pickle module is not secure. Only unpickle data you trust. It is possible to construct
+            malicious pickle data which will execute arbitrary code during unpickling. Never unpickle data that could
+            have come from an untrusted source, or that could have been tampered with."</p>
+    </blockquote>
+    <br>
+    <p>So yeah, let's do that.</p>
+    <br>
+    <h2>The Environment</h2>
+    <br>
+    <p>We are going to set up a minimal Docker app, running a minimal Flask app form; served by gunicorn. This could be
+        talking to anything on the backend, or sending data to redis, a db, etc. But for our purposes we aren't going
+        to show that.</p>
+    <br>
+    <p>Our project looks like this:</p>
+    <br>
+    <pre><code>.
+├── app
+│   ├── app.py
+│   └── templates
+│       └── form.html
+├── docker-compose.yml
+├── Dockerfile
+├── .env
+└── requirements.txt</code></pre>
+    <br>
+        <img alt="" src="/static/images/pickle_post/flask_app.png">
+    <br>
+    <p>Note that I am using pydantic here to check my json. For those who don't know, pydantic is a json schema and data
+        validator. The problem here is that the remote code exploit happens before pydantic's validation. Which, to be
+        clear, is not a problem with pydantic.</p>
+    <br>
+    <p>So we have our app running in a Docker container with a simple input form that takes input from the user. We
+        think we are safe because we are doing data validation, and schema validation.</p>
+    <br>
+        <img alt="" src="/static/images/pickle_post/docker_file.png">
+    <br>
+    <p>We get our webpage, and here are ensuring that we limit this field to ~100 characters. And here is what it looks
+        like in our browser: a simple web form with just a regular text input field.</p>
+    <br>
+        <img alt="" src="/static/images/pickle_post/html_form.png">
+    <br>
+    <h2>The Exploit</h2>
+    <br>
+    <p>I have a terminal running that I am using netcat on to wait for a connection using:</p>
+    <br>
+    <pre><code>nc -nvlp 4444</code></pre>
+    <br>
+    <p>Once I craft and encode my payload, then I send it to the webform I get a reverse shell into the Docker
+        container.</p>
+    <br>
+        <img alt="" src="/static/images/pickle_post/root_shell_initial.png">
+    <br>
+    <p>You can see that I am root (since I didn't configure anything else) I have access to any secrets if I configured
+        them (here as an example above) and a container I can write to, with the ability to install, write files, etc.,
+        inside the target environment.</p>
+    <br>
+    <h2>Why Pydantic Can't Save You</h2>
+    <br>
+    <p>So you might be thinking, well what if I just move pydantic to validate earlier? That simply doesn't work, this
+        will still cause an RCE:</p>
+    <br>
+    <pre><code>def still_an_rce(user_input):
+    data = pickle.loads(user_input)  # &lt;--RCE
+    parsed = Input(**data)  # Too late
+    return parsed</code></pre>
+    <br>
+    <p>Ok, but then what about this one-liner you ask?</p>
+    <br>
+    <pre><code>Input.parse_obj(pickle.loads(user_input))  # still triggers RCE</code></pre>
+    <br>
+    <p>The remote code execution happens during deserialization—before Pydantic even sees the input. So it doesn't
+        matter where we put it, it won't save us.</p>
+    <br>
+    <h2>Hardening the Container</h2>
+    <br>
+    <p>The best thing is not using pickle and switching to <code>json.loads()</code> instead. But there are also some
+        other things here that can be done to limit overall damage.</p>
+    <br>
+    <p>Let's start with the Dockerfile. It is running as root with a single stage, pretty simple build. We can turn this
+        into a 2 stage build, and a regular user, which partially mitigates this. While this doesn't stop the exploit,
+        it does reduce the impact by removing build tools, enforcing non-root execution, and hardening the runtime
+        environment.</p>
+    <br>
+        <img alt="" src="/static/images/pickle_post/two_stage_dockerfile.png">
+    <br>
+    <p>Let's do a few things in our docker-compose.yml as well. We have set cap-drop which removes certain capabilities,
+        this can be fine-tuned but for now I am just going to drop all here. I am also going to set the container to
+        read only, and explicitly say that it can't add security privileges. You can read more options on this
+        <a href="https://cheatsheetseries.owasp.org/cheatsheets/Docker_Security_Cheat_Sheet.html">OWASP Docker Cheat
+            Sheet</a>.</p>
+    <br>
+        <img alt="" src="/static/images/pickle_post/docker_compose.png">
+    <br>
+    <p>And when I re-run my exploit, I get a non-root, non-user shell, and you can see there are some limitations
+        here.</p>
+    <br>
+        <img alt="" src="/static/images/pickle_post/no_name_shell.png">
+    <br>
+    <p>The exploit still works, in the above example I can still get keys out of the environment that were put in the
+        .env file and I still have access, even with a non-privileged user. From here, I could try to use another
+        exploit or attack further into the infrastructure.</p>
+    <br>
+    <h2>Why Frontend Validation Fails</h2>
+    <br>
+    <p>And data validation on the front-end in JS does not work either. It can be bypassed and controlled by the user.
+        Remember that anything that runs on the client can be manipulated by the client.</p>
+    <br>
+        <img alt="" src="/static/images/pickle_post/js_bypass.png">
+    <br>
+    <p>I can bypass this going into the console and typing the following:</p>
+    <br>
+    <pre><code>document.forms[0].payload.value = "gASV...";
+document.forms[0].submit();</code></pre>
+    <br>
+    <p>And we are back into the container.</p>
+    <br>
+    <h2>What Does Work</h2>
+    <br>
+    <p><span class="dont">❌ Don't:</span></p>
+    <br>
+    <ul>
+        <li>Use pickle for untrusted data</li>
+        <li>Rely on client-side validation for security</li>
+        <li>Expect data validation libraries to prevent deserialization attacks</li>
+    </ul>
+    <br>
+    <p><span class="do">✅ Do:</span></p>
+    <br>
+    <ul>
+        <li>Don't use pickle. Validate data on the server side and validate your schema</li>
+        <li>Use <code>json.loads()</code> for data serialization instead of pickle</li>
+        <li>Implement proper server-side validation</li>
+        <li>Use trusted parsers only</li>
+    </ul>
+    <br>
+    <h2>TL;DR</h2>
+    <br>
+    <ul>
+        <li><strong>Avoid using pickle</strong></li>
+        <li><strong>Schema validation only helps before deserialization, not after</strong></li>
+        <li><strong>Hardening your container helps limit damage—but doesn't eliminate the issue</strong></li>
+        <li><strong>JavaScript validation is decorative. Treat it like CSS</strong></li>
+        <li><strong>Validate. On. The. Server. With. Trusted. Parsers</strong></li>
+    </ul>
+    <br>
+    <h2>All of this is available in the GitHub repo</h2>
+    <br>
+    <p><a href="https://github.com/marshallhumble/demos/tree/main/PickleMeNot">https://github.com/marshallhumble/demos/tree/main/PickleMeNot</a></p>
