@@ -1,17 +1,14 @@
-use axum::{
-    Router,
-    routing::get,
-};
+use axum::{Router, routing::get};
 use std::net::SocketAddr;
-use tokio::net::TcpListener;
 use tera::Tera;
+use tokio::net::TcpListener;
 
 mod handlers;
 mod middleware;
 mod models;
 mod view_models;
 
-use handlers::{home, article_list, article_view, about};
+use handlers::{about, article_list, article_view, home};
 use middleware::apply_security_headers;
 use models::load_posts;
 
@@ -23,8 +20,7 @@ pub struct AppState {
 
 #[tokio::main]
 async fn main() {
-    let tera = Tera::new("templates/**/*")
-        .expect("Failed to load templates");
+    let tera = Tera::new("templates/**/*").expect("Failed to load templates");
 
     let posts = load_posts();
 
@@ -42,10 +38,10 @@ async fn main() {
     let app = apply_security_headers(app);
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
-    let listener = TcpListener::bind(addr).await
+    let listener = TcpListener::bind(addr)
+        .await
         .expect("Failed to bind to address");
 
     println!("Listening on http://{}", addr);
-    axum::serve(listener, app).await
-        .expect("Server error");
+    axum::serve(listener, app).await.expect("Server error");
 }
