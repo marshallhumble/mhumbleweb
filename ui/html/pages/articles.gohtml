@@ -7,7 +7,7 @@
             {{range .Posts}}
                 <ol class="articlefeed">
                    <li class="articlefeed"> <a href='/articles/{{.Id}}'>{{.Title}}</a>
-                       <time class="articledate">{{.Created | humanDate}}</time></li>
+                       <time class="articledate">{{.created | humanDate}}</time></li>
                 </ol>
             {{end}}
         </table>
