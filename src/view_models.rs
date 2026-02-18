@@ -1,5 +1,5 @@
-use serde::Serialize;
 use crate::models::Post;
+use serde::Serialize;
 
 #[derive(Debug, Serialize)]
 pub struct HomeViewModel {
