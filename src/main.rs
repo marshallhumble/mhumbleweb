@@ -8,9 +8,14 @@ use axum::{
 };
 
 use handlers::{home, article_list, article_view};
+use models::AppState;
 
 #[tokio::main]
 async fn main() {
+
+    let posts = load_posts("internal/models/json/data.json").unwrap();
+    let state = AppState { posts };
+
     let app = Router::new()
         .route("/", get(home))
         .route("/health", get(|| async { "OK" }))
