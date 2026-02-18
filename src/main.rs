@@ -6,7 +6,6 @@ use tokio::net::TcpListener;
 mod handlers;
 mod middleware;
 mod models;
-mod view_models;
 
 use handlers::{about, article_list, article_view, home};
 use middleware::apply_security_headers;
