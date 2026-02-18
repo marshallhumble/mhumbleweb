@@ -36,7 +36,7 @@
             <ul class="footer-links">
                 <li><a href="https://www.linkedin.com/in/marshallhumble/" target="_blank" rel="noopener">linkedin</a></li>
                 <li><a href="https://github.com/marshallhumble" target="_blank" rel="noopener">github</a></li>
-                <li><a href="mailto:marshall@mhumble.io">email</a></li>
+                <li><a href="#" data-user="marshall" data-domain="mhumble.io" class="email-link">email</a></li>
             </ul>
             <span class="footer-copy">© 2026 Marshall Humble // MIT licensed</span>
         </div>
@@ -44,5 +44,13 @@
 </footer>
 
 <script src="/static/js/prism.js" defer></script>
+<script>
+    document.querySelectorAll('.email-link').forEach(el => {
+        el.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location = 'mailto:' + this.dataset.user + '@' + this.dataset.domain;
+        });
+    });
+</script>
 </body>
 </html>
