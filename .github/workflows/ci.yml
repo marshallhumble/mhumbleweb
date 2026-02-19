@@ -80,7 +80,7 @@ jobs:
 
       - name: Attest SBOM
         run: |
-          cosign attest \
+          cosign attest --yes \
             --predicate sbom.spdx.json \
             --type spdxjson \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
