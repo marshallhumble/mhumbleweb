@@ -19,7 +19,7 @@ FROM alpine:3.21@sha256:c3f8e73fdb79deaebaa2037150150191b9dcbfba68b4a46d70103204
 RUN apk update && apk upgrade --no-cache
 
 RUN addgroup -g 1001 -S appgroup && \
-    adduser -u 1001 -S appuser -G appgroup \
+    adduser -u 1001 -S appuser -G appgroup
 
 WORKDIR /app
 
