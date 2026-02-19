@@ -1,7 +1,7 @@
 # --------------------------------------------------
 # Stage 1: Build
 # --------------------------------------------------
-FROM rust:alpine AS build
+FROM rust:alpine@sha256:4fec02de605563c297c78a31064c8335bc004fa2b0bf406b1b99441da64e2d2d AS build
 
 RUN apk add --no-cache musl-dev
 
@@ -14,7 +14,9 @@ RUN cargo build --release --target x86_64-unknown-linux-musl
 # --------------------------------------------------
 # Stage 2: Runtime
 # --------------------------------------------------
-FROM alpine:3.21 AS runtime
+FROM alpine:3.21@sha256:c3f8e73fdb79deaebaa2037150150191b9dcbfba68b4a46d70103204c53f4709 AS runtime
+
+RUN apk update && apk upgrade --no-cache
 
 RUN addgroup -g 1001 -S appgroup && \
     adduser -u 1001 -S appuser -G appgroup

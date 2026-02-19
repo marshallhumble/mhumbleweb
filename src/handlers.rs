@@ -7,25 +7,25 @@ use axum::{
 use std::fs;
 use tera::Context;
 
-pub async fn home(State(state): State<AppState>) -> Html<String> {
+pub async fn home(State(state): State<AppState>) -> Result<Html<String>, StatusCode> {
     let mut context = Context::new();
     let recent: Vec<_> = state.posts.iter().take(4).collect();
     context.insert("posts", &recent);
     let rendered = state
         .tera
         .render("index.html", &context)
-        .expect("Failed to render index.html");
-    Html(rendered)
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    Ok(Html(rendered))
 }
 
-pub async fn article_list(State(state): State<AppState>) -> Html<String> {
+pub async fn article_list(State(state): State<AppState>) -> Result<Html<String>, StatusCode> {
     let mut context = Context::new();
     context.insert("posts", &state.posts);
     let rendered = state
         .tera
         .render("articles.html", &context)
-        .expect("Failed to render articles.html");
-    Html(rendered)
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    Ok(Html(rendered))
 }
 
 pub async fn article_view(
@@ -51,16 +51,16 @@ pub async fn article_view(
     let rendered = state
         .tera
         .render("article.html", &context)
-        .expect("Failed to render article.html");
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
     Ok(Html(rendered))
 }
 
-pub async fn about(State(state): State<AppState>) -> Html<String> {
+pub async fn about(State(state): State<AppState>) -> Result<Html<String>, StatusCode> {
     let context = Context::new();
     let rendered = state
         .tera
         .render("about.html", &context)
-        .expect("Failed to render about.html");
-    Html(rendered)
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    Ok(Html(rendered))
 }
