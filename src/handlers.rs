@@ -7,7 +7,7 @@ use axum::{
 use std::fs;
 use tera::Context;
 
-pub async fn home(State(state): State<AppState>) -> Result<Html<String>, StatusCode>  {
+pub async fn home(State(state): State<AppState>) -> Result<Html<String>, StatusCode> {
     let mut context = Context::new();
     let recent: Vec<_> = state.posts.iter().take(4).collect();
     context.insert("posts", &recent);
@@ -26,7 +26,6 @@ pub async fn article_list(State(state): State<AppState>) -> Result<Html<String>,
         .render("articles.html", &context)
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
     Ok(Html(rendered))
-
 }
 
 pub async fn article_view(
