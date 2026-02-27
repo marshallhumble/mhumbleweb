@@ -1,0 +1,166 @@
+<h1>End-to-End Supply Chain Security with Open Source Tools</h1>
+<br>
+<img alt="" src="/static/images/02262026.png">
+<br>
+<p>Last week I wrote about building a zero-cost CI/CD security pipeline for pull requests. That post covered
+    what happens when a developer opens a PR — SAST, secret detection, dependency scanning, IaC analysis, all
+    scoped to changed files and aggregated into one report.</p>
+<br>
+<p>This post covers what happens after the code passes that pipeline: building, signing, and verifying the
+    container image that ships to production. Same philosophy — all open source, no licensing costs, everything
+    demonstrable in a real repo.</p>
+<br>
+<h2>Why Supply Chain Security Is No Longer Optional</h2>
+<br>
+<p>In March 2025, the <code>tj-actions/changed-files</code> GitHub Action was compromised. Attackers pushed malicious
+    code to the repository and moved the version tags to point to it. Any workflow using
+    <code>tj-actions/changed-files@v35</code> — by tag, which is how most people reference Actions — automatically pulled
+    and executed the attacker's code. CI pipelines became the attack vector.</p>
+<br>
+<p>This is not a theoretical concern. It happened, it affected thousands of repositories, and the root cause
+    was mutable references — tags that can be silently redirected to different code.</p>
+<br>
+<p>Supply chain security is the set of decisions that make this class of attack either impossible or
+    detectable before it causes damage.</p>
+<br>
+<h2>Layer 1: Pin Everything to Immutable References</h2>
+<br>
+<p>The first decision is the most fundamental: stop using mutable tags.</p>
+<br>
+<p>In your Dockerfile, this means pinning base images to their SHA digest rather than a tag:</p>
+<br>
+<pre><code># Mutable - tag can be updated to point to different code
+FROM rust:alpine
+
+# Immutable - this exact image, forever
+FROM rust:alpine@sha256:4fec02de605563c297c78a31064c8335bc004fa2b0bf406b1b99441da64e2d2d</code></pre>
+<br>
+<p>The tag <code>rust:alpine</code> can be updated by the image maintainer at any time. The SHA digest cannot change
+    — it is cryptographically bound to that exact image content. If the image changes, the digest changes, and
+    your build fails explicitly rather than silently pulling different code.</p>
+<br>
+<p>The same principle applies to GitHub Actions:</p>
+<br>
+<pre><code># Mutable
+- uses: actions/checkout@v4
+
+# Immutable
+- uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2</code></pre>
+<br>
+<p>The version comment preserves human readability and — critically — allows Dependabot to recognize the
+    version and open PRs when updates are available. You get immutability without manual maintenance overhead.</p>
+<br>
+<p>One pattern worth calling out: it is easy to pin your Dockerfile correctly and miss the Actions in your
+    CI workflow entirely. Your security tooling is part of your supply chain. If
+    <code>aquasecurity/trivy-action@master</code> is compromised, your vulnerability scanner becomes the attack vector.
+    Pin your security tools with the same rigor you apply to your application dependencies.</p>
+<br>
+<h2>Layer 2: Automate Dependency Updates</h2>
+<br>
+<p>Pinned references are only as good as your process for keeping them current. A SHA pinned to a
+    six-month-old version of a dependency with known CVEs is not a security improvement.</p>
+<br>
+<p>Dependabot handles this automatically with two ecosystem entries in
+    <code>.github/dependabot.yml</code>:</p>
+<br>
+<pre><code>version: 2
+updates:
+  - package-ecosystem: "cargo"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "ci"</code></pre>
+<br>
+<p>The <code>github-actions</code> ecosystem reads the version comments on your SHA-pinned Actions and opens PRs when
+    new versions release. The PR shows exactly which action updated and from which SHA to which SHA. Review,
+    merge, done. You stay current without manual tracking.</p>
+<br>
+<h2>Layer 3: Sign Your Container Images</h2>
+<br>
+<p>Pinning ensures you know what went into the build. Signing proves what came out of it.</p>
+<br>
+<p>Cosign with keyless signing uses OIDC to tie the signature to the GitHub Actions identity that produced
+    it — no long-lived keys to manage, rotate, or accidentally expose:</p>
+<br>
+<pre><code>- name: Sign image
+  run: |
+    cosign sign \
+      --yes \
+      ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}</code></pre>
+<br>
+<p>The signature is stored in the container registry alongside the image and can be verified by anyone
+    with access to the registry:</p>
+<br>
+<pre><code>cosign verify \
+  --certificate-identity-regexp="https://github.com/marshallhumble/.*" \
+  --certificate-oidc-issuer="https://token.actions.githubusercontent.com" \
+  ghcr.io/marshallhumble/mhumbleweb@sha256:...</code></pre>
+<br>
+<h2>Layer 4: Generate and Attest Your SBOM</h2>
+<br>
+<p>A Software Bill of Materials documents every dependency in your image. For compliance purposes —
+    FedRAMP, HIPAA, Executive Order 14028 — having an SBOM available is increasingly a requirement rather
+    than a nice-to-have.</p>
+<br>
+<p>Syft generates the SBOM in SPDX format, but the critical step is attestation rather than just
+    attachment. <code>cosign attach sbom</code> uploads the SBOM as a blob with no cryptographic binding — anyone
+    could swap it out. <code>cosign attest</code> signs it with the same keyless OIDC identity and ties it to the
+    specific image digest:</p>
+<br>
+<pre><code>- name: Attest SBOM
+  run: |
+    cosign attest \
+      --yes \
+      --predicate sbom.spdx.json \
+      --type spdxjson \
+      ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}</code></pre>
+<br>
+<p>The difference matters for compliance: an attached SBOM tells you what was there at some point. An
+    attested SBOM proves what was in this specific image at the time it was built, signed by the build identity
+    that produced it.</p>
+<br>
+<p>For healthcare organizations specifically, the proposed HIPAA Security Rule NPRM published in January
+    2025 — currently targeted for finalization in May 2026 — explicitly requires a technology asset inventory
+    and annual verification of business associate security practices. An attested SBOM tied cryptographically
+    to a specific image digest is a concrete, auditable answer to both requirements. The organizations that
+    build these practices now won't be scrambling when the final rule drops. The 240-day compliance window
+    after finalization moves faster than most security programs.</p>
+<br>
+<h2>Layer 5: Scan Before Deploy</h2>
+<br>
+<p>The final gate before deployment is a Trivy vulnerability scan against the built image. Running this
+    after the build catches vulnerabilities introduced by the build process itself, not just the source
+    dependencies:</p>
+<br>
+<pre><code>- name: Scan image
+  uses: aquasecurity/trivy-action@<SHA> # pin this
+  with:
+    image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
+    severity: 'CRITICAL,HIGH'
+    exit-code: '1'</code></pre>
+<br>
+<p><code>exit-code: '1'</code> fails the build on critical or high findings. The pipeline does not deploy a
+    vulnerable image.</p>
+<br>
+<h2>The Full Picture</h2>
+<br>
+<p>Every one of these steps is implemented in this repo. The pipeline runs on push to main: build the
+    image, sign it with Cosign, generate the SBOM with Syft, attest the SBOM, scan with Trivy, deploy only
+    if the scan passes.</p>
+<br>
+<p>Total cost: $0. The tools are open source. The signing infrastructure uses GitHub's OIDC tokens. The
+    registry is GitHub Container Registry on a public repo.</p>
+<br>
+<p>Supply chain security is not a product you purchase. It is a set of decisions applied consistently at
+    every layer — from the base image tag in your Dockerfile to the Action SHA in your CI workflow. Your repo
+    either demonstrates those decisions or it doesn't.</p>
+<br>
+<p>This is part two of a series on building AppSec tooling without enterprise licensing. Part one covered
+    CI/CD security scanning on every pull request. Part three covers writing custom Semgrep rules for your
+    internal patterns.</p>
