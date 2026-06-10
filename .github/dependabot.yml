@@ -11,3 +11,8 @@ updates:
       interval: "weekly"
     commit-message:
       prefix: "ci"
+
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
