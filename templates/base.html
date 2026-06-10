@@ -44,13 +44,6 @@
 </footer>
 
 <script src="/static/js/prism.js" defer></script>
-<script>
-    document.querySelectorAll('.email-link').forEach(el => {
-        el.addEventListener('click', function(e) {
-            e.preventDefault();
-            window.location = 'mailto:' + this.dataset.user + '@' + this.dataset.domain;
-        });
-    });
-</script>
+<script src="/static/js/site.js" defer></script>
 </body>
 </html>
