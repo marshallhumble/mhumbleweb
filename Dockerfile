@@ -1,7 +1,7 @@
 # --------------------------------------------------
 # Stage 1: Build
 # --------------------------------------------------
-FROM rust:alpine@sha256:66f48b19d6e88519e2e58bebe0d945779a6a4ca41c2db17db78c9569655b50ac AS build
+FROM rust:alpine@sha256:f87aa870663e2b57ec8c69de82c7eedf7383bee987eef7612c0359635eaadb41 AS build
 
 RUN apk add --no-cache musl-dev
 
