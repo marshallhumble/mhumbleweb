@@ -1,6 +1,6 @@
 use axum::{Router, routing::get};
 use std::net::SocketAddr;
-use tera::Tera;
+use tera::{Tera};
 use tokio::net::TcpListener;
 
 mod handlers;
@@ -19,7 +19,8 @@ pub struct AppState {
 
 #[tokio::main]
 async fn main() {
-    let tera = Tera::new("templates/**/*").expect("Failed to load templates");
+    let mut tera = Tera::new();
+    tera.load_from_glob("templates/**/*").expect("Failed to load templates");
 
     let posts = load_posts();
 
