@@ -302,6 +302,7 @@ dependencies = [
  "serde_json",
  "tera",
  "tokio",
+ "tower",
  "tower-http",
 ]
 

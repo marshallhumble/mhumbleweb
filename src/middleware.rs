@@ -38,3 +38,40 @@ pub fn apply_security_headers(router: Router) -> Router {
             "camera=(), microphone=(), geolocation=(), payment=()",
         ))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use axum::body::Body;
+    use axum::http::Request;
+    use axum::routing::get;
+    use tower::ServiceExt;
+
+    #[tokio::test]
+    async fn applies_all_expected_security_headers() {
+        let router = apply_security_headers(Router::new().route("/", get(|| async { "ok" })));
+
+        let response = router
+            .oneshot(Request::builder().uri("/").body(Body::empty()).unwrap())
+            .await
+            .unwrap();
+
+        let headers = response.headers();
+        assert!(headers.get("content-security-policy").is_some());
+        assert_eq!(
+            headers.get("strict-transport-security").unwrap(),
+            "max-age=63072000; includeSubDomains; preload"
+        );
+        assert_eq!(headers.get("x-content-type-options").unwrap(), "nosniff");
+        assert_eq!(headers.get("x-frame-options").unwrap(), "DENY");
+        assert_eq!(headers.get("x-xss-protection").unwrap(), "0");
+        assert_eq!(
+            headers.get("referrer-policy").unwrap(),
+            "strict-origin-when-cross-origin"
+        );
+        assert_eq!(
+            headers.get("permissions-policy").unwrap(),
+            "camera=(), microphone=(), geolocation=(), payment=()"
+        );
+    }
+}
