@@ -14,7 +14,7 @@ RUN cargo build --release --target x86_64-unknown-linux-musl
 # --------------------------------------------------
 # Stage 2: Runtime
 # --------------------------------------------------
-FROM alpine:3.2.3@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a AS runtime
+FROM alpine:3.24.3@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a AS runtime
 
 RUN apk update && apk upgrade --no-cache
 
