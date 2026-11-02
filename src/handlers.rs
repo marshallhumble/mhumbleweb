@@ -1,5 +1,5 @@
-use crate::models::Post;
 use crate::AppState;
+use crate::models::Post;
 use axum::{
     extract::{Path, State},
     http::StatusCode,
@@ -13,9 +13,8 @@ use tera::Context;
 /// traversal, even if data.json is later sourced from somewhere less trusted.
 fn valid_filename(s: &str) -> bool {
     !s.is_empty()
-        && s
-        .bytes()
-        .all(|b| b.is_ascii_alphanumeric() || b == b'-' || b == b'_')
+        && s.bytes()
+            .all(|b| b.is_ascii_alphanumeric() || b == b'-' || b == b'_')
 }
 
 /// Reads every article body once, at startup. Panics on an unsafe filename or
@@ -186,7 +185,11 @@ mod tests {
         // files, so this also guards data.json against bad entries in CI.
         let posts = load_posts();
         let bodies = load_article_bodies(&posts);
-        assert_eq!(bodies.len(), posts.len(), "duplicate post ids in data.json?");
+        assert_eq!(
+            bodies.len(),
+            posts.len(),
+            "duplicate post ids in data.json?"
+        );
         for post in &posts {
             let body = bodies.get(&post.id).expect("missing body");
             assert!(!body.is_empty(), "empty article body for id {}", post.id);
