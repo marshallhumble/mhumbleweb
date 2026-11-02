@@ -7,18 +7,38 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Default-deny. The job only needs to read the repo.
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - name: Checkout code
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
 
+      # Pinned by SHA, so the toolchain is passed explicitly instead of being
+      # inferred from a branch ref like @stable.
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
         with:
+          toolchain: stable
           components: rustfmt, clippy
+
+      # The cache key includes the compiler version, because `stable` moves
+      # and stale target/ artifacts from an older rustc waste time or break.
+      - name: Record rustc version
+        id: rustc
+        run: echo "version=$(rustc --version | tr ' ' '-')" >> "$GITHUB_OUTPUT"
 
       - name: Cache cargo registry
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
@@ -27,17 +47,20 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: ${{ runner.os }}-cargo-
+          key: ${{ runner.os }}-cargo-${{ steps.rustc.outputs.version }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-${{ steps.rustc.outputs.version }}-
 
       - name: Check formatting
         run: cargo fmt --check
 
+      # --all-targets lints the test code too, including the new regression tests.
       - name: Run clippy
-        run: cargo clippy -- -D warnings
+        run: cargo clippy --locked --all-targets -- -D warnings
 
+      # --locked fails the build if Cargo.lock would change, so dependency
+      # drift can't slip in unreviewed.
       - name: Run tests
-        run: cargo test
+        run: cargo test --locked
 
       - name: Build release binary
-        run: cargo build --release
+        run: cargo build --release --locked
