@@ -216,7 +216,10 @@ mod tests {
             let res = app.clone().oneshot(req("/", Some(s))).await.unwrap();
             assert_eq!(res.status(), StatusCode::OK);
         }
-        let res = app.oneshot(req("/", Some("not-either-secret"))).await.unwrap();
+        let res = app
+            .oneshot(req("/", Some("not-either-secret")))
+            .await
+            .unwrap();
         assert_eq!(res.status(), StatusCode::NOT_FOUND);
     }
 
