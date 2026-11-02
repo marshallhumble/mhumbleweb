@@ -40,7 +40,19 @@ impl AppState {
     }
 }
 
-fn app(state: AppState) -> Router {
+fn origin_secrets() -> Vec<Vec<u8>> {
+    let secrets = std::env::var("ORIGIN_SECRET")
+        .map(|raw| middleware::parse_secrets(&raw))
+        .unwrap_or_default();
+
+    // Fail closed in production: a missing, misnamed, or empty secret must not unlock fly.dev.
+    if secrets.is_empty() && std::env::var("FLY_APP_NAME").is_ok() {
+        panic!("ORIGIN_SECRET must be set to a non-empty value when running on Fly");
+    }
+    secrets // empty locally means unlocked
+}
+
+fn app(state: AppState, secrets: Vec<Vec<u8>>) -> Router {
     let router = Router::new()
         .route("/", get(home))
         .route("/health", get(|| async { "OK" }))
@@ -50,14 +62,15 @@ fn app(state: AppState) -> Router {
         .nest_service("/static", tower_http::services::ServeDir::new("static"))
         .with_state(state);
 
-    apply_security_headers(router)
+    // Header layers wrap the lock so its 404 carries them.
+    apply_security_headers(middleware::lock_origin(router, secrets))
 }
 
 #[tokio::main]
 async fn main() {
     let state = AppState::load();
 
-    let app = app(state);
+    let app = app(state, origin_secrets());
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     let listener = TcpListener::bind(addr)
@@ -75,15 +88,34 @@ mod tests {
     use axum::http::{Request, StatusCode};
     use tower::ServiceExt;
 
+    const TEST_SECRET: &str = "0123456789abcdef";
+
     fn test_state() -> AppState {
         AppState::load()
     }
 
-    async fn get(uri: &str) -> axum::http::Response<Body> {
-        app(test_state())
-            .oneshot(Request::builder().uri(uri).body(Body::empty()).unwrap())
+    fn locked() -> Vec<Vec<u8>> {
+        middleware::parse_secrets(TEST_SECRET)
+    }
+
+    async fn send(
+        secrets: Vec<Vec<u8>>,
+        uri: &str,
+        origin_header: Option<&str>,
+    ) -> axum::http::Response<Body> {
+        let mut builder = Request::builder().uri(uri);
+        if let Some(value) = origin_header {
+            builder = builder.header("x-origin-verify", value);
+        }
+        app(test_state(), secrets)
+            .oneshot(builder.body(Body::empty()).unwrap())
             .await
             .unwrap()
+    }
+
+    /// Unlocked router, as in local dev. Existing tests use this.
+    async fn get(uri: &str) -> axum::http::Response<Body> {
+        send(Vec::new(), uri, None).await
     }
 
     async fn body_string(response: axum::http::Response<Body>) -> String {
@@ -204,5 +236,39 @@ mod tests {
             "content-type: {content_type}"
         );
         assert!(!body_string(response).await.is_empty());
+    }
+
+    // ---- Origin lock, tested through the router ----
+
+    #[tokio::test]
+    async fn locked_origin_rejects_direct_requests_with_security_headers() {
+        for path in ["/", "/articles", "/about", "/static/anything.css"] {
+            let response = send(locked(), path, None).await;
+            assert_eq!(response.status(), StatusCode::NOT_FOUND, "path: {path}");
+            let headers = response.headers();
+            assert_eq!(headers.get("x-content-type-options").unwrap(), "nosniff");
+            assert_eq!(headers.get("x-frame-options").unwrap(), "DENY");
+            assert!(headers.get("content-security-policy").is_some());
+        }
+    }
+
+    #[tokio::test]
+    async fn locked_origin_rejects_wrong_secret() {
+        let response = send(locked(), "/", Some("wrong-secret-value")).await;
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    }
+
+    #[tokio::test]
+    async fn locked_origin_allows_correct_secret_on_real_routes() {
+        for path in ["/", "/articles", "/about"] {
+            let response = send(locked(), path, Some(TEST_SECRET)).await;
+            assert_eq!(response.status(), StatusCode::OK, "path: {path}");
+        }
+    }
+
+    #[tokio::test]
+    async fn locked_origin_leaves_health_open() {
+        let response = send(locked(), "/health", None).await;
+        assert_eq!(response.status(), StatusCode::OK);
     }
 }
