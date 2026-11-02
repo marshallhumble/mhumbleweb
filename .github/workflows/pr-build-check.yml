@@ -4,29 +4,55 @@ on:
   pull_request:
     branches: [main]
 
+# Default-deny. The job grants only what it needs.
+permissions: {}
+
+# Cancel superseded runs when you push again to the same PR.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
+# Tests, fmt, and clippy run in the separate Rust CI workflow.
 jobs:
-  build-test:
+  build-scan:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: read
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4.1.0
 
+      # No push. `load: true` puts the image in the local daemon so Trivy can
+      # scan exactly what was built.
       - name: Build Docker image (no push)
         uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
         with:
           context: .
           platforms: linux/amd64
           push: false
+          load: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:pr-test
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      # Same gate as the main workflow, so a new CVE fails the PR instead of
+      # failing the build after merge.
+      # TODO: add an exact version comment (# vX.Y.Z) so Dependabot can bump it.
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:pr-test
+          format: 'table'
+          exit-code: '1'
+          severity: 'CRITICAL,HIGH'

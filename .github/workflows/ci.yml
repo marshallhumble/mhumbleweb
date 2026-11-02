@@ -5,6 +5,9 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Default-deny. Each job grants only what it needs.
+permissions: {}
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
@@ -12,19 +15,20 @@ env:
 jobs:
   build-and-security:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: read
-      packages: write
-      id-token: write
-      attestations: write
+      packages: write   # push to GHCR
+      id-token: write   # keyless cosign signing
 
     outputs:
-      image: ${{ steps.image.outputs.image }}
       digest: ${{ steps.build.outputs.digest }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4.1.0
@@ -41,13 +45,9 @@ jobs:
         uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9 # v6.1.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          # Immutable tag only. `latest` is added after the scan passes.
           tags: |
             type=raw,value={{date 'YYYYMMDD'}}-{{sha}}
-            type=raw,value=latest
-
-      - name: Set image output
-        id: image
-        run: echo "image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$(date +%Y%m%d)-${{ github.sha }}" >> $GITHUB_OUTPUT
 
       - name: Build and push Docker image
         id: build
@@ -61,20 +61,37 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Set image reference
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: echo "IMAGE_REF=${REGISTRY}/${IMAGE_NAME}@${DIGEST}" >> "$GITHUB_ENV"
+
+      # Scan BEFORE promoting, signing, or attesting. If this fails, nothing
+      # is tagged `latest` and nothing is signed.
+      # TODO: add an exact version comment (# vX.Y.Z) so Dependabot can bump it.
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
+        with:
+          image-ref: ${{ env.IMAGE_REF }}
+          format: 'table'
+          exit-code: '1'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Promote to latest
+        run: docker buildx imagetools create --tag "${REGISTRY}/${IMAGE_NAME}:latest" "${IMAGE_REF}"
+
       - name: Install Cosign
         uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
 
-      - name: Install Syft
-        uses: anchore/sbom-action/download-syft@e22c389904149dbc22b58101806040fa8d37a610 # v0
-
       - name: Sign container image
-        run: |
-          cosign sign --yes ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
+        run: cosign sign --yes "${IMAGE_REF}"
 
+      # TODO: replace the floating "# v0" comment with an exact version.
+      # sbom-action installs Syft itself, so no separate download step.
       - name: Generate SBOM
         uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0
         with:
-          image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
+          image: ${{ env.IMAGE_REF }}
           format: spdx-json
           output-file: sbom.spdx.json
 
@@ -83,34 +100,56 @@ jobs:
           cosign attest --yes \
             --predicate sbom.spdx.json \
             --type spdxjson \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
+            "${IMAGE_REF}"
 
+      # GITHUB_WORKFLOW_REF is "owner/repo/.github/workflows/<file>@<ref>",
+      # which is exactly the keyless certificate identity. No hardcoded
+      # filename, and no ${{ }} interpolation inside the script.
       - name: Verify image signature
         run: |
-          cosign verify ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }} \
-            --certificate-identity "https://github.com/${{ github.repository }}/.github/workflows/ci.yml@refs/heads/${{ github.ref_name }}" \
+          cosign verify "${IMAGE_REF}" \
+            --certificate-identity "https://github.com/${GITHUB_WORKFLOW_REF}" \
             --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
-
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
-        with:
-          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
-          format: 'table'
-          exit-code: '1'
-          severity: 'CRITICAL,HIGH'
 
   deploy:
     needs: [build-and-security]
+    # workflow_dispatch can be run from any branch. Only deploy main.
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Add required reviewers to this environment (repo Settings > Environments)
+    # if you want a manual approval gate before production deploys.
+    environment: production
+    permissions:
+      contents: read
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+
+    env:
+      IMAGE_REF: ghcr.io/${{ github.repository }}@${{ needs.build-and-security.outputs.digest }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
 
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+
+      # Verify here too, so the signature check guards the step that matters.
+      - name: Verify image signature before deploy
+        run: |
+          cosign verify "${IMAGE_REF}" \
+            --certificate-identity "https://github.com/${GITHUB_WORKFLOW_REF}" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
+
+      # TODO: add an exact version comment (# vX.Y.Z) so Dependabot can bump it.
       - name: Setup Fly.io CLI
         uses: superfly/flyctl-actions/setup-flyctl@ed8efb33836e8b2096c7fd3ba1c8afe303ebbff1
 
       - name: Deploy to Fly.io
-        run: flyctl deploy --image ghcr.io/marshallhumble/mhumbleweb@${{ needs.build-and-security.outputs.digest }}
+        run: flyctl deploy --image "${IMAGE_REF}"
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
