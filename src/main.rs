@@ -64,7 +64,7 @@ async fn main() {
         .await
         .expect("Failed to bind to address");
 
-    println!("Listening on https://{}", addr);
+    println!("Listening on http://{}", addr);
     axum::serve(listener, app).await.expect("Server error");
 }
 
