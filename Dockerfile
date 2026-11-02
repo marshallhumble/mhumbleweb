@@ -1,7 +1,7 @@
 # --------------------------------------------------
 # Stage 1: Build
 # --------------------------------------------------
-FROM rust:alpine@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a AS build
+FROM rust:alpine@sha256:7e9e2d068a107a2adafd19930011178d14a78326053cd4c3a9f7ad3fd049557d AS build
 
 RUN apk add --no-cache musl-dev
 
@@ -14,27 +14,16 @@ RUN cargo build --release --target x86_64-unknown-linux-musl
 # --------------------------------------------------
 # Stage 2: Runtime
 # --------------------------------------------------
-FROM alpine:3.24.3@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a AS runtime
-
-RUN apk update && apk upgrade --no-cache
-
-RUN addgroup -g 1001 -S appgroup && \
-    adduser -u 1001 -S appuser -G appgroup
+FROM scratch AS runtime
 
 WORKDIR /app
 
-COPY --from=build /src/target/x86_64-unknown-linux-musl/release/mhumbleweb ./mhumbleweb
-COPY --from=build /src/templates ./templates
-COPY --from=build /src/static ./static
-COPY --from=build /src/internal/models/json/data.json ./internal/models/json/data.json
+COPY --from=build --chown=1001:1001 /src/target/x86_64-unknown-linux-musl/release/mhumbleweb ./mhumbleweb
+COPY --from=build --chown=1001:1001 /src/templates ./templates
+COPY --from=build --chown=1001:1001 /src/static ./static
+COPY --from=build --chown=1001:1001 /src/internal/models/json/data.json ./internal/models/json/data.json
 
-RUN chmod +x ./mhumbleweb && \
-    chown -R appuser:appgroup /app
-
-USER appuser
+USER 1001:1001
 EXPOSE 3000
-
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD wget -qO- http://localhost:3000/health || exit 1
 
 CMD ["./mhumbleweb"]
