@@ -1,7 +1,7 @@
 # --------------------------------------------------
 # Stage 1: Build
 # --------------------------------------------------
-FROM rust:alpine@sha256:66f48b19d6e88519e2e58bebe0d945779a6a4ca41c2db17db78c9569655b50ac AS build
+FROM rust:alpine@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a AS build
 
 RUN apk add --no-cache musl-dev
 
@@ -14,7 +14,7 @@ RUN cargo build --release --target x86_64-unknown-linux-musl
 # --------------------------------------------------
 # Stage 2: Runtime
 # --------------------------------------------------
-FROM alpine:3.24@sha256:a2d49ea686c2adfe3c992e47dc3b5e7fa6e6b5055609400dc2acaeb241c829f4 AS runtime
+FROM alpine:3.2.3@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a AS runtime
 
 RUN apk update && apk upgrade --no-cache
 
